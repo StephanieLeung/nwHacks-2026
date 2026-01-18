@@ -1,9 +1,11 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { exec } from "child_process";
 import path from "node:path";
 createRequire(import.meta.url);
 const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
+let repoPath = "";
 process.env.APP_ROOT = path.join(__dirname$1, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
@@ -26,6 +28,33 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
 }
+async function registerListeners() {
+  ipcMain.handle("git:run", async (_event, command) => {
+    return new Promise((resolve, reject) => {
+      exec(
+        `git ${command}`,
+        { cwd: repoPath },
+        (err, stdout, stderr) => {
+          console.log(`Running git ${command} in ${repoPath}`);
+          if (stdout) console.log("stdout:", stdout);
+          if (stderr) console.log("stderr:", stderr);
+          if (err) {
+            reject(stderr || err.message);
+          } else {
+            resolve(stdout);
+          }
+        }
+      );
+    });
+  });
+  ipcMain.handle("path:set", async (_event, path2) => {
+    return new Promise((resolve) => {
+      repoPath = path2;
+      console.log(`repoPath set to ${repoPath}`);
+      resolve(repoPath);
+    });
+  });
+}
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
@@ -37,7 +66,7 @@ app.on("activate", () => {
     createWindow();
   }
 });
-app.whenReady().then(createWindow);
+app.on("ready", createWindow).whenReady().then(registerListeners).catch((e) => console.error(e));
 export {
   MAIN_DIST,
   RENDERER_DIST,
