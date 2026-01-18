@@ -66,17 +66,33 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
   };
 
   const handleCommit = () => {
+    console.log('Commit button clicked'); // Debugging log
     if (commitMessage.trim()) {
-      window.API.git.run(`commit -m "${commitMessage}"`)
-        .then(response => {
-          console.log('Commit successful:', response);
-          setShowCommitInput(false);
-          setCommitMessage('');
+      console.log('Commit message:', commitMessage); // Debugging log
+      window.API.git.run('status --porcelain')
+        .then(statusOutput => {
+          if (!statusOutput.trim()) {
+            console.error('No changes to commit');
+            return;
+          }
+
+          window.API.git.run(`commit -m "${commitMessage}"`)
+            .then(response => {
+              console.log('Commit successful:', response);
+              setShowCommitInput(false);
+              setCommitMessage('');
+            })
+            .catch(error => console.error('Commit failed:', error));
         })
-        .catch(error => console.error('Commit failed:', error));
+        .catch(error => console.error('Failed to check status:', error));
     } else {
       console.error('Commit message cannot be empty');
     }
+  };
+
+  const closeCommitInput = () => {
+    setShowCommitInput(false);
+    setCommitMessage('');
   };
 
   useEffect(() => {
@@ -113,10 +129,12 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
   return (
     <div className="grid grid-rows-1 grid-cols-2">
       <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-        <PopoverTrigger className="justify-self-end self-start">
-          <button className="w-5 h-5 rounded-2xl border-1 border-zinc-800 shadow-md hover:bg-zinc-100 flex justify-center items-center">
-            <EllipsisVertical size={15} color="black" />
-          </button>
+        <PopoverTrigger asChild>
+          <div className="justify-self-end self-start">
+            <button className="w-5 h-5 rounded-2xl border-1 border-zinc-800 shadow-md hover:bg-zinc-100 flex justify-center items-center">
+              <EllipsisVertical size={15} color="black" />
+            </button>
+          </div>
         </PopoverTrigger>
         <PopoverPortal>
           <PopoverContent className="z-50 bg-white shadow-md w-50 p-2">
@@ -146,12 +164,20 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
             placeholder="Enter commit message"
             className="mb-2"
           />
-          <button
-            onClick={handleCommit}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-          >
-            Commit
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={handleCommit}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            >
+              Commit
+            </button>
+            <button
+              onClick={closeCommitInput}
+              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
