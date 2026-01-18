@@ -28,7 +28,7 @@ export function DAGGraph() {
         const headCommit = commits.find(c =>
           c.hash = head.trim()
         )
-        
+
         if (headCommit) setCurrentCommit(headCommit.hash)
         
         console.log('DAG layout created:', nodes)
@@ -99,7 +99,7 @@ export function DAGGraph() {
     // Delay hiding the tooltip by 300ms
     const timeout = setTimeout(() => {
       setHoveredNode(null)
-    }, 300)
+    }, 600)
     // Store timeout reference (though we can't update the ref properly in useState)
   }
   

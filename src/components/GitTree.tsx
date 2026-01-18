@@ -4,9 +4,11 @@ import GitHistoryGraph from './GitHistoryGraph';
 import { DAGGraph } from './DAGGraph'; 
 import { useGit } from '../context/GitContext';
 import { useEffect, useState } from 'react'
+import Landing from './Landing';
 
 interface GitTreeProps {
-  activeTab: 'branches' | 'commits' | 'log' | 'tree';
+  // activeTab: 'branches' | 'commits' | 'log' | 'tree';
+  activeTab: 'landing' |'tree' | 'log';
 }
 
 const mockBranches = [
@@ -61,6 +63,14 @@ export function GitTree({ activeTab }: GitTreeProps) {
     }
     fetchCommits()
   }, [])
+  if (activeTab === 'landing') {
+    return (
+      <div className='w-full flex justify-center items-center'>
+        <Landing />
+      </div>
+    )
+
+  }
 
   if (activeTab === 'tree') {
     // return <RepositoryTree />;
@@ -71,114 +81,115 @@ export function GitTree({ activeTab }: GitTreeProps) {
   )
   }
 
-  if (activeTab === 'branches') {
-    return (
-      <div className="flex-1 p-4 overflow-auto">
-        <div className="space-y-2">
-          {mockBranches.map((branch, index) => {
-            const colors = ['pink', 'blue', 'purple', 'green'];
-            const colorClasses = getColorClasses(colors[index % colors.length]);
-            return (
-              <div
-                key={branch.name}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all border-2 ${
-                  branch.current
-                    ? `${colorClasses.bg} ${colorClasses.border} shadow-sm`
-                    : 'hover:bg-purple-50 border-transparent hover:border-purple-100'
-                }`}
-              >
-                <GitBranch
-                  className={`w-5 h-5 ${branch.current ? colorClasses.text : 'text-gray-400'}`}
-                />
-                <span
-                  className={`text-sm flex-1 font-medium ${
-                    branch.current ? colorClasses.text : 'text-gray-600'
-                  }`}
-                >
-                  {branch.name}
-                </span>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${colorClasses.bg} ${colorClasses.text}`}>
-                  {branch.commits}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
+  // if (activeTab === 'branches') {
+  //   return (
+  //     <div className="flex-1 p-4 overflow-auto">
+  //       <div className="space-y-2">
+  //         {mockBranches.map((branch, index) => {
+  //           const colors = ['pink', 'blue', 'purple', 'green'];
+  //           const colorClasses = getColorClasses(colors[index % colors.length]);
+  //           return (
+  //             <div
+  //               key={branch.name}
+  //               className={`flex items-center gap-3 px-4 py-3 rounded-2xl cursor-pointer transition-all border-2 ${
+  //                 branch.current
+  //                   ? `${colorClasses.bg} ${colorClasses.border} shadow-sm`
+  //                   : 'hover:bg-purple-50 border-transparent hover:border-purple-100'
+  //               }`}
+  //             >
+  //               <GitBranch
+  //                 className={`w-5 h-5 ${branch.current ? colorClasses.text : 'text-gray-400'}`}
+  //               />
+  //               <span
+  //                 className={`text-sm flex-1 font-medium ${
+  //                   branch.current ? colorClasses.text : 'text-gray-600'
+  //                 }`}
+  //               >
+  //                 {branch.name}
+  //               </span>
+  //               <span className={`text-xs font-semibold px-2 py-1 rounded-full ${colorClasses.bg} ${colorClasses.text}`}>
+  //                 {branch.commits}
+  //               </span>
+  //             </div>
+  //           );
+  //         })}
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  if (activeTab === 'commits') {
-    return (
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left side: Graph visualization */}
-        <div className="w-1/2 p-4 overflow-auto border-r-2 border-purple-100">
-          <div className="space-y-0">
-            {mockCommits.map((commit, index) => {
-              const colorClasses = getColorClasses(commit.color);
-              const isLast = index === mockCommits.length - 1;
+  // if (activeTab === 'commits') {
+  //   return (
+  //     <div className="flex-1 flex overflow-hidden">
+  //       {/* Left side: Graph visualization */}
+  //       <div className="w-1/2 p-4 overflow-auto border-r-2 border-purple-100">
+  //         <div className="space-y-0">
+  //           {mockCommits.map((commit, index) => {
+  //             const colorClasses = getColorClasses(commit.color);
+  //             const isLast = index === mockCommits.length - 1;
               
-              return (
-                <div key={commit.hash} className="flex gap-3 relative">
-                  {/* Graph line */}
-                  <div className="flex flex-col items-center relative">
-                    {commit.isMerge ? (
-                      <div className={`w-6 h-6 ${colorClasses.dot} rounded-full flex items-center justify-center shadow-md z-10`}>
-                        <GitMerge className="w-3 h-3 text-white" />
-                      </div>
-                    ) : (
-                      <div className={`w-5 h-5 ${colorClasses.dot} rounded-full shadow-md z-10`}></div>
-                    )}
-                    {!isLast && (
-                      <div className={`w-0.5 h-16 ${colorClasses.dot} opacity-30 mt-1`}></div>
-                    )}
-                  </div>
+  //             return (
+  //               <div key={commit.hash} className="flex gap-3 relative">
+  //                 {/* Graph line */}
+  //                 <div className="flex flex-col items-center relative">
+  //                   {commit.isMerge ? (
+  //                     <div className={`w-6 h-6 ${colorClasses.dot} rounded-full flex items-center justify-center shadow-md z-10`}>
+  //                       <GitMerge className="w-3 h-3 text-white" />
+  //                     </div>
+  //                   ) : (
+  //                     <div className={`w-5 h-5 ${colorClasses.dot} rounded-full shadow-md z-10`}></div>
+  //                   )}
+  //                   {!isLast && (
+  //                     <div className={`w-0.5 h-16 ${colorClasses.dot} opacity-30 mt-1`}></div>
+  //                   )}
+  //                 </div>
                   
-                  {/* Commit info */}
-                  <div className="flex-1 pb-4">
-                    <div className={`px-3 py-2 rounded-xl ${colorClasses.bg} border ${colorClasses.border}`}>
-                      <div className="text-xs font-mono text-gray-500 mb-1">{commit.hash}</div>
-                      <div className={`text-sm font-medium ${colorClasses.text}`}>{commit.message}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+  //                 {/* Commit info */}
+  //                 <div className="flex-1 pb-4">
+  //                   <div className={`px-3 py-2 rounded-xl ${colorClasses.bg} border ${colorClasses.border}`}>
+  //                     <div className="text-xs font-mono text-gray-500 mb-1">{commit.hash}</div>
+  //                     <div className={`text-sm font-medium ${colorClasses.text}`}>{commit.message}</div>
+  //                   </div>
+  //                 </div>
+  //               </div>
+  //             );
+  //           })}
+  //         </div>
+  //       </div>
 
-        {/* Right side: File changes */}
-        <div className="w-1/2 p-4 overflow-auto bg-purple-50/30">
-          <div className="mb-3">
-            <h3 className="text-xs font-semibold text-purple-600 mb-2">📝 Changed Files</h3>
-          </div>
-          <div className="space-y-2">
-            {mockFiles.map((file) => (
-              <div
-                key={file.name}
-                className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border-2 border-purple-100 hover:border-purple-200 transition-all"
-              >
-                <div className={`w-2 h-2 rounded-full ${
-                  file.status === 'modified' ? 'bg-yellow-400' :
-                  file.status === 'added' ? 'bg-green-400' :
-                  'bg-red-400'
-                }`}></div>
-                <FileCode className="w-4 h-4 text-purple-400" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-medium text-gray-700 truncate">{file.name}</div>
-                  <div className="text-xs text-gray-500">{file.lines}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+  //       {/* Right side: File changes */}
+  //       <div className="w-1/2 p-4 overflow-auto bg-purple-50/30">
+  //         <div className="mb-3">
+  //           <h3 className="text-xs font-semibold text-purple-600 mb-2">📝 Changed Files</h3>
+  //         </div>
+  //         <div className="space-y-2">
+  //           {mockFiles.map((file) => (
+  //             <div
+  //               key={file.name}
+  //               className="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border-2 border-purple-100 hover:border-purple-200 transition-all"
+  //             >
+  //               <div className={`w-2 h-2 rounded-full ${
+  //                 file.status === 'modified' ? 'bg-yellow-400' :
+  //                 file.status === 'added' ? 'bg-green-400' :
+  //                 'bg-red-400'
+  //               }`}></div>
+  //               <FileCode className="w-4 h-4 text-purple-400" />
+  //               <div className="flex-1 min-w-0">
+  //                 <div className="text-xs font-medium text-gray-700 truncate">{file.name}</div>
+  //                 <div className="text-xs text-gray-500">{file.lines}</div>
+  //               </div>
+  //             </div>
+  //           ))}
+  //         </div>
+  //       </div>
+  //     </div>
 
-    );
-  }
+  //   );
+  // }
 
   // Log view
-return (
+  if (activeTab === 'log') {
+    return (
     <div className="flex-1 p-4 overflow-auto bg-purple-50/30">
       <div className="font-mono text-xs space-y-1 bg-white p-4 rounded-2xl border-2 border-purple-100">
         {loading ? (
@@ -213,5 +224,8 @@ return (
         )}
       </div>
     </div>
-  );
-}
+    );
+  }
+
+
+  }

@@ -1,21 +1,21 @@
-import React, { useState } from 'react'
 import { GitVisualizer } from './components/GitVisualizer'
 import Landing from './components/Landing'
 import { GitProvider } from './context/GitContext'
 import './App.css'
+import { usePath } from './context/PathContext'
 
 export default function App() {
-  const [path, setPath] = useState<string>('')
+  const { path } = usePath();
 
   return (
     <div className="h-full m-0 p-0">
-      {path.trim() === '' ? (
-        <Landing setAppPath={setPath} />
-      ) : (
-      <GitProvider>
-        <GitVisualizer />
-      </GitProvider>
-      )}
+        {path.trim() === '' ? (
+          <Landing />
+        ) : (
+        <GitProvider>
+          <GitVisualizer />
+        </GitProvider>
+        )}
     </div>
   )
 }

@@ -10,8 +10,9 @@ declare global {
   }
 }
 
+
 export function GitVisualizer() {
-  const [activeTab, setActiveTab] = useState<'branches' | 'commits' | 'log' | 'tree'>('commits');
+  const [activeTab, setActiveTab] = useState<'landing' | 'log' | 'tree'>('tree');
   const { loading, refetchGit } = useGit();
 
   useEffect(() => {
