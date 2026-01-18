@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import { DAGLayout, LayoutNode, Commit } from '../services/dagLayout'
 import { fetchCommitsForDAG } from '../services/gitCommitParser'
+import { LittleMan } from './LittleMan'
+import { useGit } from '../context/GitContext'
 
 export function DAGGraph() {
   const [layoutNodes, setLayoutNodes] = useState<LayoutNode[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [currentCommit, setCurrentCommit] = useState<string | null>(null)
+  const { characterState } = useGit()
+  const hoverTimeoutRef = useState<NodeJS.Timeout | null>(null)[0]
 
   useEffect(() => {
     async function buildDAG() {
@@ -42,17 +46,54 @@ export function DAGGraph() {
   const ROW_HEIGHT = 60
   const maxLane = Math.max(...layoutNodes.map((n) => n.lane), 0)
   const maxY = Math.max(...layoutNodes.map((n) => n.y), 0)
-  const width = (maxLane + 1) * LANE_WIDTH + 100
-  const height = maxY + ROW_HEIGHT + 100
-
+  const contentWidth = (maxLane + 1) * LANE_WIDTH + 100
+  const contentHeight = maxY + ROW_HEIGHT + 100
+  
+  // Whitespace margins
+  const marginTop = 150
+  const marginBottom = 50
+  const marginLeft = 100
+  const marginRight = 50
+  
+  const width = contentWidth + marginLeft + marginRight
+  const height = contentHeight + marginTop + marginBottom
+  
+  // Hover handlers with delay
+  const handleMouseEnter = (nodeHash: string) => {
+    if (hoverTimeoutRef) clearTimeout(hoverTimeoutRef)
+    setHoveredNode(nodeHash)
+  }
+  
+  const handleMouseLeave = () => {
+    // Delay hiding the tooltip by 300ms
+    const timeout = setTimeout(() => {
+      setHoveredNode(null)
+    }, 300)
+    // Store timeout reference (though we can't update the ref properly in useState)
+  }
+  
   return (
-    <div className="h-full w-full overflow-auto bg-gray-50">
-      <svg
+    <div className="h-full w-full overflow-auto bg-gray-50 relative pl-8">
+      {/* LittleMan positioned above current HEAD */}
+      {currentCommit && layoutNodes.length > 0 && (() => {
+        const currentNode = layoutNodes.find(n => n.hash === currentCommit)
+        if (currentNode) {
+          // Shifted more to the left, positioned slightly above node
+          const leftOffset = currentNode.lane === 0 ? currentNode.x - 40 : currentNode.x - 40
+          return (
+            <div style={{ position: 'absolute', left: `${leftOffset + marginLeft + 32 - 20}px`, top: `${currentNode.y + marginTop + 30 - 10}px`, zIndex: 50 }}>
+              <LittleMan characterState={characterState as any} />
+            </div>
+          )
+        }
+        return null
+      })()}       <svg
         width={width}
         height={height}
-        viewBox={`0 0 ${width} ${height}`}
+        viewBox={`${-marginLeft} ${-marginTop} ${width} ${height}`}
         preserveAspectRatio="xMinYMin meet"
-        className="bg-white block"
+        className="bg-white block relative"
+        style={{ zIndex: 10 }}
       >
         {/* Draw commit connections */}
         {layoutNodes.map((node) =>
@@ -120,8 +161,8 @@ export function DAGGraph() {
           return (
           <g 
             key={node.hash}
-            onMouseEnter={() => isInteractive && setHoveredNode(node.hash)}
-            onMouseLeave={() => isInteractive && setHoveredNode(null)}
+            onMouseEnter={() => isInteractive && handleMouseEnter(node.hash)}
+            onMouseLeave={() => isInteractive && handleMouseLeave()}
             style={{ cursor: isInteractive ? 'pointer' : 'default' }}
           >
             {/* Commit circle */}
@@ -156,7 +197,11 @@ export function DAGGraph() {
             
             {/* Hover tooltip for current node */}
             {isCurrentNode && isHovered && (
-              <g>
+              <g 
+                style={{ zIndex: 100 }}
+                onMouseEnter={() => handleMouseEnter(node.hash)}
+                onMouseLeave={handleMouseLeave}
+              >
                 <rect
                   x={node.x + 50}
                   y={node.y - 60}
@@ -167,6 +212,7 @@ export function DAGGraph() {
                   strokeWidth="2"
                   rx="8"
                   opacity="0.95"
+                  style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))', cursor: 'pointer' }}
                 />
                 <text
                   x={node.x + 60}
@@ -213,7 +259,11 @@ export function DAGGraph() {
             
             {/* Hover tooltip for branch tips */}
             {isBranchTip && !isCurrentNode && isHovered && (
-              <g>
+              <g 
+                style={{ zIndex: 100 }}
+                onMouseEnter={() => handleMouseEnter(node.hash)}
+                onMouseLeave={handleMouseLeave}
+              >
                 <rect
                   x={node.x + 50}
                   y={node.y - 60}
@@ -224,6 +274,7 @@ export function DAGGraph() {
                   strokeWidth="2"
                   rx="8"
                   opacity="0.95"
+                  style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))', cursor: 'pointer' }}
                 />
                 <text
                   x={node.x + 60}

@@ -120,6 +120,14 @@ async function registerListeners() {
       });
     });
   });
+  ipcMain.handle("git:hasUnstagedChanges", async () => {
+    return new Promise((resolve, reject) => {
+      if (!repoPath) return reject("repoPath not set");
+      execFile("git", ["diff", "--quiet"], { cwd: repoPath }, (err) => {
+        resolve(err ? true : false);
+      });
+    });
+  });
 }
 app.whenReady().then(() => {
   createWindow();

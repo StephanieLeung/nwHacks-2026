@@ -162,6 +162,17 @@ async function registerListeners () {
       })
     })
   })
+
+  ipcMain.handle('git:hasUnstagedChanges', async () => {
+    return new Promise((resolve, reject) => {
+      if (!repoPath) return reject('repoPath not set')
+      
+      execFile('git', ['diff', '--quiet'], { cwd: repoPath }, (err) => {
+        // git diff --quiet exits with 0 if no changes, 1 if there are changes
+        resolve(err ? true : false)
+      })
+    })
+  })
 }
 
 

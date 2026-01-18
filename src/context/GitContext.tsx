@@ -5,10 +5,13 @@ export interface GitData {
   logs: string
   loading: boolean
   error: string | null
+  characterState: 'idle' | 'working' | 'dirty'
+  hasUnstagedChanges: boolean
 }
 
 interface GitContextType extends GitData {
   refetchGit: () => Promise<void>
+  setCharacterState: (state: 'idle' | 'working' | 'dirty') => void
 }
 
 const GitContext = createContext<GitContextType | undefined>(undefined)
@@ -18,6 +21,8 @@ export function GitProvider({ children }: { children: React.ReactNode }) {
   const [logs, setLogs] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [characterState, setCharacterState] = useState<'idle' | 'working' | 'dirty'>('idle')
+  const [hasUnstagedChanges, setHasUnstagedChanges] = useState(false)
 
   const refetchGit = useCallback(async () => {
     setLoading(true)
@@ -26,6 +31,10 @@ export function GitProvider({ children }: { children: React.ReactNode }) {
       const data = await window.ipcRenderer.invoke('git:startup')
       setStatus(data.status)
       setLogs(data.logs)
+      // Check for unstaged changes
+      const hasChanges = await window.ipcRenderer.invoke('git:hasUnstagedChanges')
+      setHasUnstagedChanges(hasChanges)
+      setCharacterState(hasChanges ? 'dirty' : 'idle')
       console.log('Git data refreshed:', data)
     } catch (err: any) {
       setError(err?.message || 'Failed to fetch git data')
@@ -35,7 +44,7 @@ export function GitProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <GitContext.Provider value={{ status, logs, loading, error, refetchGit }}>
+    <GitContext.Provider value={{ status, logs, loading, error, refetchGit, characterState, setCharacterState, hasUnstagedChanges }}>
       {children}
     </GitContext.Provider>
   )
