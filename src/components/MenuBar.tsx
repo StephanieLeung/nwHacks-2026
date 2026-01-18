@@ -71,17 +71,14 @@ export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
 
       {/* Action Buttons */}
       <div className="flex items-center gap-2 px-4 py-3 bg-white">
-        <button className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm"
-            onClick={pullHandler}>
+        <button className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
           <RefreshCw className="w-3.5 h-3.5" />
           Pull
         </button>
-        <button className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-gradient-to-r from-blue-100 to-cyan-100 hover:from-blue-200 hover:to-cyan-200 border-2 border-blue-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm"
-            onClick={pushHandler}>
+        <button className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-gradient-to-r from-blue-100 to-cyan-100 hover:from-blue-200 hover:to-cyan-200 border-2 border-blue-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
           Push
         </button>
-        <button className="px-3 py-1.5 text-xs font-semibold text-pink-700 bg-gradient-to-r from-pink-100 to-rose-100 hover:from-pink-200 hover:to-rose-200 border-2 border-pink-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm"
-            onClick={fetchHandler}>
+        <button className="px-3 py-1.5 text-xs font-semibold text-pink-700 bg-gradient-to-r from-pink-100 to-rose-100 hover:from-pink-200 hover:to-rose-200 border-2 border-pink-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
           Fetch
         </button>
         <div className="flex-1"></div>

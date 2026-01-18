@@ -193,7 +193,6 @@ async function registerListeners () {
   })
 }
 
-
 app.whenReady()
   .then(() => {
     createWindow();
