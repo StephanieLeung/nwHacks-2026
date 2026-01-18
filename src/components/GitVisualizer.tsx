@@ -13,7 +13,7 @@ declare global {
 
 export function GitVisualizer() {
   const [activeTab, setActiveTab] = useState<'landing' | 'log' | 'tree'>('tree');
-  const { loading, refetchGit } = useGit();
+  const { refetchGit } = useGit();
 
   useEffect(() => {
     // Fetch on mount
@@ -33,10 +33,6 @@ export function GitVisualizer() {
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
   }, [refetchGit]);
-
-  if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading...</div>;
-  }
 
   return (
     <div className='flex flex-col h-full justify-between'>
