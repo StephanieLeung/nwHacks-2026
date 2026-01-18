@@ -25,16 +25,10 @@ const api = {
    * Here you can expose functions to the renderer process
    * so they can interact with the main (electron) side
    * without security problems.
-   *
-   * The function below can accessed using `window.Main.sendMessage`
    */
   sendMessage: (message) => {
     electron.ipcRenderer.send("message", message);
   },
-  /**
-   * Provide an easier way to listen to events
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on: (channel, callback) => {
     electron.ipcRenderer.on(channel, (_, data) => callback(data));
   },
@@ -43,7 +37,10 @@ const api = {
     getHistory: () => electron.ipcRenderer.invoke("git:getHistory")
   },
   path: {
-    set: (path) => electron.ipcRenderer.invoke("path:set", path)
+    // Sets the path in main process (existing)
+    set: (path) => electron.ipcRenderer.invoke("path:set", path),
+    // Opens a native folder chooser in main and returns selected path (or null)
+    select: () => electron.ipcRenderer.invoke("path:select")
   }
 };
 electron.contextBridge.exposeInMainWorld("API", api);

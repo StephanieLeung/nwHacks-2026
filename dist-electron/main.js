@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { exec } from "node:child_process";
@@ -91,6 +91,22 @@ async function registerListeners() {
       console.log(`repoPath set to ${repoPath}`);
       resolve(repoPath);
     });
+  });
+  ipcMain.handle("path:select", async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ["openDirectory"]
+      });
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+      repoPath = result.filePaths[0];
+      console.log(`repoPath set to ${repoPath} via dialog`);
+      return repoPath;
+    } catch (err) {
+      console.error("Error selecting path:", err);
+      throw err;
+    }
   });
 }
 app.whenReady().then(() => {
