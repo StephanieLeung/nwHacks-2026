@@ -14,10 +14,11 @@ export interface LittleManProps {
   x?: number
   y?: number
   characterState?: 'idle' | 'working' | 'dirty'
+  animationState?: 'none' | 'pulling' | 'pushing'
   onActionSelect?: (action: string) => void
 }
 
-export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: LittleManProps) {
+export function LittleMan({ x, y, characterState = 'idle', animationState = 'none', onActionSelect }: LittleManProps) {
   const gitActionMap = [
     { name: 'Commit', image: littleman },
     { name: 'Push', image: littleman },
@@ -32,7 +33,15 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
     dirty: luggage,
   };
 
-  const [litleMan, setLittleMan] = useState<any>(stateImageMap[characterState]);
+  // Show pull animation when pulling, push animation shows working state
+  const displayImage = animationState === 'pulling' ? pull : stateImageMap[characterState];
+
+  const [litleMan, setLittleMan] = useState<any>(displayImage);
+
+  useEffect(() => {
+    setLittleMan(displayImage);
+  }, [displayImage, characterState, animationState]);
+
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [commitMessage, setCommitMessage] = useState('');
   const [showCommitInput, setShowCommitInput] = useState(false);
@@ -58,6 +67,12 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
       case 'Pull': {
         const cmd = `git pull`;
         setCommand(cmd);
+            onActionSelect?.('Push');
+          })
+          .catch(error => console.error('Push failed:', error));
+        break;
+      case 'Pull':
+        onActionSelect?.('Pull');
         window.API.git.run('pull')
           .then(response => {
             console.log('Pull successful:', response)
@@ -132,11 +147,14 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
     const intervalId = setInterval(() => {
       window.API.git.hasChanges()
         .then(response => {
-          if (response.hasChanges) {
-            setLittleMan(hold_box);
-          } else {
-            // Revert to the default state based on characterState
-            setLittleMan(stateImageMap[characterState]);
+          // Only update if not in animation state
+          if (animationState === 'none') {
+            if (response.hasChanges) {
+              setLittleMan(luggage);
+            } else {
+              // Revert to the default state based on characterState
+              setLittleMan(stateImageMap[characterState]);
+            }
           }
         })
         .catch(error => {
@@ -146,7 +164,7 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
-  }, [characterState]);
+  }, [characterState, animationState]);
 
   // If positioned (x, y provided), render as inline element positioned absolutely
   if (x !== undefined && y !== undefined) {

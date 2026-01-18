@@ -11,7 +11,7 @@ export function DAGGraph() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [currentCommit, setCurrentCommit] = useState<string | null>(null)
   const [checkingOutBranch, setCheckingOutBranch] = useState<string | null>(null)
-  const { refetchGit, characterState} = useGit()
+  const { refetchGit, characterState, animationState, triggerAnimation } = useGit()
   const hoverTimeoutRef = useState<NodeJS.Timeout | null>(null)[0]
 
   const { setCommand } = useTerminal();
@@ -20,6 +20,9 @@ export function DAGGraph() {
     async function buildDAG() {
       setLoading(true)
       try {
+        // Refresh git state first
+        await refetchGit()
+        
         const commits = await fetchCommitsForDAG()
         const branches = extractBranches(commits)
         const layout = new DAGLayout(commits)
@@ -44,7 +47,7 @@ export function DAGGraph() {
     }
 
     buildDAG()
-  }, [])
+  }, [refetchGit])
 
   const handleCheckoutBranch = async (branchName: string) => {
     setCheckingOutBranch(branchName)
@@ -93,6 +96,18 @@ export function DAGGraph() {
   
   const width = contentWidth + marginLeft + marginRight
   const height = contentHeight + marginTop + marginBottom
+
+  // Calculate LittleMan position early so it's available for rendering
+  let littleManX = 0
+  let littleManY = 0
+  if (currentCommit && layoutNodes.length > 0) {
+    const currentNode = layoutNodes.find(n => n.hash === currentCommit)
+    if (currentNode) {
+      const leftOffset = currentNode.lane === 0 ? currentNode.x - 40 : currentNode.x - 40
+      littleManX = leftOffset + marginLeft + 32 - 20
+      littleManY = currentNode.y + marginTop + 30 - 10
+    }
+  }
   
   // Hover handlers with delay
   const handleMouseEnter = (nodeHash: string) => {
@@ -111,20 +126,14 @@ export function DAGGraph() {
   return (
     <div className="h-full w-full overflow-auto bg-gray-50 relative pl-8">
       {/* LittleMan positioned above current HEAD */}
-      {currentCommit && layoutNodes.length > 0 && (() => {
-        const currentNode = layoutNodes.find(n => n.hash === currentCommit)
-        if (currentNode) {
-          // Shifted more to the left, positioned slightly above node
-          const leftOffset = currentNode.lane === 0 ? currentNode.x - 40 : currentNode.x - 40
-          return (
-            <div style={{ position: 'absolute', left: `${leftOffset + marginLeft + 32 - 20}px`, top: `${currentNode.y + marginTop + 30 - 10}px`, zIndex: 50 }}>
-              <LittleMan characterState={characterState as any} />
-            </div>
-          )
-        }
-        return null
-      })()}       
-      <svg
+      {currentCommit && layoutNodes.length > 0 && !loading && (
+        <div style={{ position: 'absolute', left: `${littleManX}px`, top: `${littleManY}px`, zIndex: 50 }}>
+          <LittleMan characterState={characterState as any} animationState={animationState} onActionSelect={(action) => {
+            if (action === 'Pull') triggerAnimation('pulling')
+            if (action === 'Push') triggerAnimation('pushing')
+          }} />
+        </div>
+      )}       <svg
         width={width}
         height={height}
         viewBox={`${-marginLeft} ${-marginTop} ${width} ${height}`}
