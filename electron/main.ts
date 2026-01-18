@@ -167,10 +167,21 @@ async function registerListeners () {
     return new Promise((resolve, reject) => {
       if (!repoPath) return reject('repoPath not set')
       
-      execFile('git', ['diff', '--quiet'], { cwd: repoPath }, (err) => {
-        // git diff --quiet exits with 0 if no changes, 1 if there are changes
-        resolve(err ? true : false)
-      })
+      exec(
+        'git status --porcelain',
+        { cwd: repoPath },
+        (err, stdout, stderr) => {
+          if (err) {
+            return reject(stderr || err.message)
+          }
+          
+          // If stdout is empty, there are no changes
+          // If stdout has content, there are uncommitted/unstaged changes
+          const hasChanges = stdout.trim().length > 0
+          console.log('git status check:', hasChanges, stdout.trim())
+          resolve(hasChanges)
+        }
+      )
     })
   })
 }

@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { DAGLayout, LayoutNode, Commit } from '../services/dagLayout'
 import { fetchCommitsForDAG } from '../services/gitCommitParser'
-import { LittleMan } from './LittleMan'
 import { useGit } from '../context/GitContext'
+import { LittleMan } from './LittleMan'
 
 export function DAGGraph() {
   const [layoutNodes, setLayoutNodes] = useState<LayoutNode[]>([])
   const [loading, setLoading] = useState(true)
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [currentCommit, setCurrentCommit] = useState<string | null>(null)
-  const { characterState } = useGit()
+  const [checkingOutBranch, setCheckingOutBranch] = useState<string | null>(null)
+  const { refetchGit, characterState} = useGit()
   const hoverTimeoutRef = useState<NodeJS.Timeout | null>(null)[0]
 
   useEffect(() => {
@@ -39,6 +40,32 @@ export function DAGGraph() {
 
     buildDAG()
   }, [])
+
+  const handleCheckoutBranch = async (branchName: string) => {
+    setCheckingOutBranch(branchName)
+    try {
+      await window.API.git.run(`checkout ${branchName}`)
+      console.log(`Checked out to ${branchName}`)
+      // Refetch git data to update the DAG
+      await refetchGit()
+      // Rebuild DAG
+      const commits = await fetchCommitsForDAG()
+      const branches = extractBranches(commits)
+      const layout = new DAGLayout(commits)
+      const nodes = layout.getLayout(branches)
+      setLayoutNodes(nodes)
+      
+      const headCommit = commits.find(c => 
+        c.refs.some(r => r.includes('HEAD'))
+      )
+      if (headCommit) setCurrentCommit(headCommit.hash)
+    } catch (err) {
+      console.error(`Error checking out ${branchName}:`, err)
+      alert(`Failed to checkout ${branchName}: ${err}`)
+    } finally {
+      setCheckingOutBranch(null)
+    }
+  }
 
   if (loading) return <div className="flex items-center justify-center h-full">Building DAG...</div>
 
@@ -263,6 +290,7 @@ export function DAGGraph() {
                 style={{ zIndex: 100 }}
                 onMouseEnter={() => handleMouseEnter(node.hash)}
                 onMouseLeave={handleMouseLeave}
+                onClick={() => handleCheckoutBranch(branchNames[0])}
               >
                 <rect
                   x={node.x + 50}
@@ -270,8 +298,8 @@ export function DAGGraph() {
                   width="300"
                   height="100"
                   fill="white"
-                  stroke="#4CAF50"
-                  strokeWidth="2"
+                  stroke={checkingOutBranch === branchNames[0] ? '#FF9800' : '#4CAF50'}
+                  strokeWidth={checkingOutBranch === branchNames[0] ? 3 : 2}
                   rx="8"
                   opacity="0.95"
                   style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))', cursor: 'pointer' }}
@@ -309,12 +337,12 @@ export function DAGGraph() {
                   x={node.x + 60}
                   y={node.y + 10}
                   fontSize="10"
-                  fill="#4CAF50"
+                  fill={checkingOutBranch === branchNames[0] ? '#FF9800' : '#4CAF50'}
                   fontWeight="bold"
                   fontFamily="sans-serif"
                   style={{ textDecoration: 'underline' }}
                 >
-                  ▶ Click to switch to this branch
+                  {checkingOutBranch === branchNames[0] ? '⟳ Checking out...' : '▶ Click to switch to this branch'}
                 </text>
               </g>
             )}

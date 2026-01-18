@@ -41,7 +41,8 @@ export const api = {
 
   git: {
     run: (command: string) => ipcRenderer.invoke('git:run', command),
-    getHistory: () => ipcRenderer.invoke("git:getHistory")
+    getHistory: () => ipcRenderer.invoke("git:getHistory"),
+    hasChanges: () => ipcRenderer.invoke("git:hasChanges")
   },
 
   path: {

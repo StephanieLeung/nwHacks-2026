@@ -34,7 +34,8 @@ const api = {
   },
   git: {
     run: (command) => electron.ipcRenderer.invoke("git:run", command),
-    getHistory: () => electron.ipcRenderer.invoke("git:getHistory")
+    getHistory: () => electron.ipcRenderer.invoke("git:getHistory"),
+    hasChanges: () => electron.ipcRenderer.invoke("git:hasChanges")
   },
   path: {
     // Sets the path in main process (existing)
