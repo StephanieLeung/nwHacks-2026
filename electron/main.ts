@@ -129,6 +129,8 @@ async function registerListeners () {
     });
   });
 
+  ipcMain.handle('window:minimize', () => win?.minimize());
+  ipcMain.handle('window:close', () => win?.close());
   ipcMain.handle('path:select', async () => {
     try {
       const result = await dialog.showOpenDialog({

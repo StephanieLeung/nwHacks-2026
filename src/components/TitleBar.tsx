@@ -1,4 +1,4 @@
-import {FolderGit2} from 'lucide-react'
+import {FolderGit2, Minus, X} from 'lucide-react'
 
 export function TitleBar() {
     return (
@@ -7,10 +7,19 @@ export function TitleBar() {
             <FolderGit2 className="w-5 h-5 text-purple-700" />
             <span className="text-sm text-purple-800 font-semibold">✨ git visualizer</span>
             </div>
-            <div className="flex items-center gap-2">
-            <button className="w-3 h-3 rounded-full bg-yellow-300 hover:bg-yellow-400 shadow-sm"></button>
-            <button className="w-3 h-3 rounded-full bg-green-300 hover:bg-green-400 shadow-sm"></button>
-            <button className="w-3 h-3 rounded-full bg-pink-300 hover:bg-pink-400 shadow-sm"></button>
+            <div className="flex items-center gap-2 text-purple-800 [app-region:no-drag]">
+                <button 
+                    onClick={window.windowControls.minimize}
+                    className="w-3 h-3 rounded-full bg-yellow-300 hover:bg-yellow-400 shadow-sm flex justify-center items-center"
+                >
+                    <Minus size={8} />
+                </button>
+                <button 
+                    onClick={window.windowControls.close}
+                    className="w-3 h-3 rounded-full bg-pink-300 hover:bg-pink-400 shadow-sm flex justify-center items-center"
+                >
+                    <X size={8} />
+                </button>
             </div>
         </div>
     )
