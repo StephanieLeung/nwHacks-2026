@@ -1,9 +1,13 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
+import { exec } from 'child_process'
+
 
 let mainWindow: BrowserWindow | null
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
+
+
 
 // const assetsPath =
 //   process.env.NODE_ENV === 'production'
@@ -30,6 +34,7 @@ function createWindow () {
   })
 }
 
+
 async function registerListeners () {
   /**
    * This comes from bridge integration, check bridge.ts
@@ -37,6 +42,21 @@ async function registerListeners () {
   ipcMain.on('message', (_, message) => {
     console.log(message)
   })
+
+  ipcMain.handle('git:run', async (_event, command: string) => {
+    return new Promise((resolve, reject) => {
+      exec(`git ${command}`, (err, stdout, stderr) => {
+          err ? reject(stderr) : resolve(stdout)
+          console.log(`Running git ${command}`);
+          if (stdout) console.log('stdout:', stdout);
+          if (stderr) console.log('stderr:', stderr);
+          if (err) reject(stderr);
+          else resolve(stdout);
+        }
+      );
+    });
+  });
+  
 }
 
 app.on('ready', createWindow)
