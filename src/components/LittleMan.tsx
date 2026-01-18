@@ -8,6 +8,7 @@ import { PopoverPortal, PopoverTrigger } from '@radix-ui/react-popover'
 import { useState, useEffect } from 'react'
 import { Input } from './ui/input';
 import { useTerminal } from '../context/TerminalContext';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion'
 
 export interface LittleManProps {
   x?: number
@@ -158,10 +159,13 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
 
   // Otherwise render as standalone component with menu
   return (
-    <div className="grid grid-rows-1 grid-cols-2">
-      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+    <div className="relative grid grid-rows-1 grid-cols-2">
+        <img src={litleMan} alt="littleman" className="w-12 h-12" />
+
+      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}
+      >
         <PopoverTrigger asChild>
-          <div className="justify-self-end self-start">
+          <div className="justify-self-start self-start">
             <button className="w-5 h-5 rounded-2xl border-1 border-zinc-800 shadow-md hover:bg-zinc-100 flex justify-center items-center">
               <EllipsisVertical size={15} color="black" />
             </button>
@@ -170,8 +174,36 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
         <PopoverPortal>
           <PopoverContent className="z-50 bg-white shadow-md w-50 p-2">
             <div className="space-y-1 cursor-default">
-              {gitActionMap.map(action => (
-                <div
+              {gitActionMap.map(action => {
+                if (action.name === 'Commit') 
+                    return (
+                        <Accordion type="single" collapsible>
+                            <AccordionItem 
+                                value={action.name}
+                                className="px-2 py-1 m-0 rounded-md hover:bg-zinc-100"
+
+                            >
+                                <AccordionTrigger>{action.name}</AccordionTrigger>
+                                <AccordionContent>
+                                    <Input
+                                        value={commitMessage}
+                                        onChange={e => setCommitMessage(e.target.value)}
+                                        placeholder="Enter commit message"
+                                        className="mb-2 mt-2"
+                                    />
+                                    <div className="flex space-x-2">
+                                        <button
+                                        onClick={handleCommit}
+                                        className="px-3 py-1.5 text-xs font-semibold text-sm text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-200 rounded-full shadow-sm"
+                                        >
+                                        Commit
+                                        </button>
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    )
+                return (<div
                   key={action.name}
                   className="px-2 py-1 rounded-md hover:bg-zinc-100"
                   onClick={() => {
@@ -180,39 +212,12 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
                   }}
                 >
                   {action.name}
-                </div>
-              ))}
+                </div>)
+                })}
             </div>
           </PopoverContent>
         </PopoverPortal>
       </Popover>
-
-      {showCommitInput && (
-        <div className="flex flex-col items-center">
-          <Input
-            value={commitMessage}
-            onChange={e => setCommitMessage(e.target.value)}
-            placeholder="Enter commit message"
-            className="mb-2"
-          />
-          <div className="flex space-x-2">
-            <button
-              onClick={handleCommit}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
-              Commit
-            </button>
-            <button
-              onClick={closeCommitInput}
-              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      <img src={litleMan} alt="littleman" className="w-12 h-12" />
-    </div>
+      </div>
   );
 }

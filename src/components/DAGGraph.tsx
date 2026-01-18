@@ -86,7 +86,7 @@ export function DAGGraph() {
   const contentHeight = maxY + ROW_HEIGHT + 100
   
   // Whitespace margins
-  const marginTop = 150
+  const marginTop = 100
   const marginBottom = 50
   const marginLeft = 100
   const marginRight = 50
@@ -123,12 +123,13 @@ export function DAGGraph() {
           )
         }
         return null
-      })()}       <svg
+      })()}       
+      <svg
         width={width}
         height={height}
         viewBox={`${-marginLeft} ${-marginTop} ${width} ${height}`}
         preserveAspectRatio="xMinYMin meet"
-        className="bg-white block relative"
+        className="block relative"
         style={{ zIndex: 10 }}
       >
         {/* Draw commit connections */}
@@ -240,7 +241,7 @@ export function DAGGraph() {
               >
                 <rect
                   x={node.x + 50}
-                  y={node.y - 60}
+                  y={node.y}
                   width="300"
                   height="100"
                   fill="white"
@@ -252,7 +253,7 @@ export function DAGGraph() {
                 />
                 <text
                   x={node.x + 60}
-                  y={node.y - 40}
+                  y={node.y + 20}
                   fontSize="11"
                   fill="#333"
                   fontWeight="bold"
@@ -262,7 +263,7 @@ export function DAGGraph() {
                 </text>
                 <text
                   x={node.x + 60}
-                  y={node.y - 25}
+                  y={node.y + 35}
                   fontSize="10"
                   fill="#666"
                   fontWeight="600"
@@ -272,7 +273,7 @@ export function DAGGraph() {
                 </text>
                 <text
                   x={node.x + 60}
-                  y={node.y - 10}
+                  y={node.y + 50}
                   fontSize="10"
                   fill="#666"
                   fontFamily="sans-serif"
@@ -281,7 +282,7 @@ export function DAGGraph() {
                 </text>
                 <text
                   x={node.x + 60}
-                  y={node.y + 10}
+                  y={node.y + 70}
                   fontSize="10"
                   fill="#0066cc"
                   fontWeight="bold"
@@ -302,8 +303,8 @@ export function DAGGraph() {
                 onClick={() => handleCheckoutBranch(branchNames[0])}
               >
                 <rect
-                  x={node.x + 50}
-                  y={node.y - 60}
+                  x={node.x + 60}
+                  y={node.y}
                   width="300"
                   height="100"
                   fill="white"
@@ -314,8 +315,8 @@ export function DAGGraph() {
                   style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))', cursor: 'pointer' }}
                 />
                 <text
-                  x={node.x + 60}
-                  y={node.y - 40}
+                  x={node.x + 70}
+                  y={node.y + 20}
                   fontSize="11"
                   fill="#333"
                   fontWeight="bold"
@@ -324,8 +325,8 @@ export function DAGGraph() {
                   Branch Tip: {node.hash.slice(0, 10)}
                 </text>
                 <text
-                  x={node.x + 60}
-                  y={node.y - 25}
+                  x={node.x + 70}
+                  y={node.y + 35}
                   fontSize="10"
                   fill="#666"
                   fontWeight="600"
@@ -334,8 +335,8 @@ export function DAGGraph() {
                   Branch: {branchNames.join(', ')}
                 </text>
                 <text
-                  x={node.x + 60}
-                  y={node.y - 10}
+                  x={node.x + 70}
+                  y={node.y + 50}
                   fontSize="10"
                   fill="#666"
                   fontFamily="sans-serif"
@@ -343,8 +344,8 @@ export function DAGGraph() {
                   {node.message}
                 </text>
                 <text
-                  x={node.x + 60}
-                  y={node.y + 10}
+                  x={node.x + 70}
+                  y={node.y + 70}
                   fontSize="10"
                   fill={checkingOutBranch === branchNames[0] ? '#FF9800' : '#4CAF50'}
                   fontWeight="bold"
