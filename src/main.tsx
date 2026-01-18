@@ -4,15 +4,18 @@ import App from './App.tsx'
 import './index.css'
 import { TitleBar } from './components/TitleBar.tsx'
 import { PathProvider } from './context/PathContext.tsx'
+import { TerminalProvider } from './context/TerminalContext.tsx'
 
 ReactDOM.createRoot(document.getElementById('titlebar')!).render(
   <TitleBar />
 )
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <TerminalProvider>
     <PathProvider>
       <App />
     </PathProvider>
+    </TerminalProvider>
   </React.StrictMode>,
 )
 

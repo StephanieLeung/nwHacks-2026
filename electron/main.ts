@@ -103,21 +103,22 @@ async function registerListeners () {
     })
   })
 
-  ipcMain.handle('git:run', async (_event, command: string) => {
-    console.log(`Executing git command: git ${command}`); // Debugging log
-    console.log(`Current repoPath: ${repoPath}`); // Debugging log
-    return new Promise((resolve, reject) => {
-      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
-        if (err) {
-          console.error(`Error executing git command: ${stderr || err.message}`); // Debugging log
-          reject(stderr || err.message);
-        } else {
-          console.log(`Git command output: ${stdout}`); // Debugging log
-          resolve(stdout);
-        }
-      });
-    });
-  });
+ipcMain.handle('git:run', async (_event, command: string): Promise<string> => {
+  const gitCommand = `git ${command}`
+
+  return new Promise((resolve) => {
+    exec(gitCommand, { cwd: repoPath }, (err, stdout, stderr) => {
+      if (err) {
+        console.error(`Error executing git command: ${stderr || err.message}`)
+      } else {
+        console.log(`Git command output: ${stdout}`)
+      }
+
+      resolve(gitCommand)
+    })
+  })
+})
+
 
   ipcMain.handle('path:set', async (_event, path: string) => {
     return new Promise((resolve) => {
