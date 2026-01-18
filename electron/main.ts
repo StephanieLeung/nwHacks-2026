@@ -4,6 +4,8 @@ import { exec } from 'child_process'
 
 let mainWindow: BrowserWindow | null
 
+let repoPath: string = ""
+
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string
 
@@ -45,15 +47,27 @@ async function registerListeners () {
 
   ipcMain.handle('git:run', async (_event, command: string) => {
     return new Promise((resolve, reject) => {
-      exec(`git ${command}`, (err, stdout, stderr) => {
-          err ? reject(stderr) : resolve(stdout)
-          console.log(`Running git ${command}`);
+      // run git with cwd set to repoPath
+      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
+          console.log(`Running git ${command} in ${repoPath}`);
           if (stdout) console.log('stdout:', stdout);
           if (stderr) console.log('stderr:', stderr);
-          if (err) reject(stderr);
-          else resolve(stdout);
+
+          if (err) {
+            reject(stderr || err.message)
+          } else {
+            resolve(stdout)
+          }
         }
       );
+    });
+  });
+
+  ipcMain.handle('path:set', async (_event, path: string) => {
+    return new Promise((resolve) => {
+      repoPath = path
+      console.log(`repoPath set to ${repoPath}`)
+      resolve(repoPath)
     });
   });
   

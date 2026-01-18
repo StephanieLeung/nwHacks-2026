@@ -22,6 +22,10 @@ export const api = {
 
   git: {
     run: (command: string) => ipcRenderer.invoke('git:run', command)
+  },
+
+  path: {
+    set: (path: string) => ipcRenderer.send('path:set', path)
   }
 }
 
