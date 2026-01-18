@@ -3,6 +3,7 @@ import { DAGLayout, LayoutNode, Commit } from '../services/dagLayout'
 import { fetchCommitsForDAG } from '../services/gitCommitParser'
 import { useGit } from '../context/GitContext'
 import { LittleMan } from './LittleMan'
+import { useTerminal } from '../context/TerminalContext';
 
 export function DAGGraph() {
   const [layoutNodes, setLayoutNodes] = useState<LayoutNode[]>([])
@@ -12,6 +13,8 @@ export function DAGGraph() {
   const [checkingOutBranch, setCheckingOutBranch] = useState<string | null>(null)
   const { refetchGit, characterState} = useGit()
   const hoverTimeoutRef = useState<NodeJS.Timeout | null>(null)[0]
+
+  const { setCommand } = useTerminal();
 
   useEffect(() => {
     async function buildDAG() {
@@ -46,6 +49,8 @@ export function DAGGraph() {
   const handleCheckoutBranch = async (branchName: string) => {
     setCheckingOutBranch(branchName)
     try {
+      const checkoutCmd = `git checkout ${branchName}`
+      setCommand(checkoutCmd);
       await window.API.git.run(`checkout ${branchName}`)
       console.log(`Checked out to ${branchName}`)
       

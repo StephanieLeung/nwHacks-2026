@@ -1,8 +1,8 @@
 import { Terminal } from 'lucide-react';
-import { useState } from 'react';
+import { useTerminal } from '../context/TerminalContext';
 
 export function TerminalPanel() {
-  const [command, setCommand] = useState('');
+  const { command, setCommand } = useTerminal();
 
   return (
     <div className="bg-gradient-to-r from-purple-100 via-pink-100 to-blue-100 border-t-2 border-purple-200 p-3">

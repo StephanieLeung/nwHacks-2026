@@ -46,41 +46,35 @@ async function registerListeners() {
     console.log(message);
   });
   ipcMain.handle("git:getHistory", async () => {
+    const gitCommand = `git log --all --parents --date-order --pretty=format:%H|%P|%D|%s`;
     return new Promise((resolve, reject) => {
-      if (!repoPath) return reject("repoPath not set");
-      execFile(
-        "git",
-        ["rev-parse", "--is-inside-work-tree"],
-        { cwd: repoPath },
-        (err, stdout) => {
-          if (err || stdout.trim() !== "true") {
-            return reject("Not a git repository at repoPath");
-          }
-          execFile(
-            "git",
-            ["log", "--all", "--parents", "--date-order", "--pretty=format:%H|%P|%D|%s"],
-            { cwd: repoPath },
-            (err2, stdout2, stderr) => {
-              if (err2) return reject(stderr || err2.message);
-              resolve(stdout2);
-            }
-          );
+      if (!repoPath) return reject({ error: "repoPath not set", command: gitCommand });
+      execFile("git", ["rev-parse", "--is-inside-work-tree"], { cwd: repoPath }, (err, stdout) => {
+        if (err || stdout.trim() !== "true") {
+          return reject({ error: "Not a git repository at repoPath", command: gitCommand });
         }
-      );
+        execFile("git", gitCommand.split(" ").slice(1), { cwd: repoPath }, (err2, stdout2, stderr2) => {
+          if (err2) return reject({ error: stderr2 || err2.message, command: gitCommand });
+          resolve({ output: stdout2, command: gitCommand });
+        });
+      });
     });
   });
   ipcMain.handle("git:run", async (_event, command) => {
-    console.log(`Executing git command: git ${command}`);
+    const gitCommand = `git ${command}`;
+    console.log(`Executing git command: ${gitCommand}`);
     console.log(`Current repoPath: ${repoPath}`);
     return new Promise((resolve, reject) => {
-      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
+      exec(gitCommand, { cwd: repoPath }, (err, stdout, stderr) => {
         if (err) {
           console.error(`Error executing git command: ${stderr || err.message}`);
-          reject(stderr || err.message);
-        } else {
-          console.log(`Git command output: ${stdout}`);
-          resolve(stdout);
+          return reject(
+            new Error(`Git command failed: ${gitCommand}
+${stderr || err.message}`)
+          );
         }
+        console.log(`Git command output: ${stdout}`);
+        resolve(gitCommand);
       });
     });
   });
@@ -110,38 +104,33 @@ async function registerListeners() {
     }
   });
   ipcMain.handle("git:startup", async () => {
+    const statusCmd = `git status`;
+    const logsCmd = `git log -5 --pretty=format:"%h|%p|%an|%ar|%s"`;
     return new Promise((resolve, reject) => {
-      exec("git status", { cwd: repoPath }, (err, stdout) => {
-        const status = err ? "error" : stdout;
-        exec(
-          `git log -5 --pretty=format:"%h|%p|%an|%ar|%s"`,
-          { cwd: repoPath },
-          (err2, logs) => {
-            if (err2) {
-              reject(err2);
-            } else {
-              resolve({ status, logs });
-            }
+      exec(statusCmd, { cwd: repoPath }, (err, stdout) => {
+        const status = err ? err.message || "error" : stdout;
+        exec(logsCmd, { cwd: repoPath }, (err2, logs) => {
+          if (err2) {
+            return reject({ error: err2.message || err2, command: `${statusCmd} && ${logsCmd}` });
+          } else {
+            return resolve({ status, logs, command: `${statusCmd} && ${logsCmd}` });
           }
-        );
+        });
       });
     });
   });
   ipcMain.handle("git:hasChanges", async () => {
+    const gitCommand = `git status --porcelain`;
     return new Promise((resolve, reject) => {
-      if (!repoPath) return reject("repoPath not set");
-      exec(
-        "git status --porcelain",
-        { cwd: repoPath },
-        (err, stdout, stderr) => {
-          if (err) {
-            return reject(stderr || err.message);
-          }
-          const hasChanges = stdout.trim().length > 0;
-          console.log("git status check:", hasChanges, stdout.trim());
-          resolve(hasChanges);
+      if (!repoPath) return reject({ error: "repoPath not set", command: gitCommand });
+      exec(gitCommand, { cwd: repoPath }, (err, stdout, stderr) => {
+        if (err) {
+          return reject({ error: stderr || err.message, command: gitCommand });
         }
-      );
+        const hasChanges = stdout.trim().length > 0;
+        console.log("git status check:", hasChanges, stdout.trim());
+        resolve({ hasChanges, command: gitCommand });
+      });
     });
   });
 }

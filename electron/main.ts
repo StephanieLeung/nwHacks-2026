@@ -78,46 +78,44 @@ async function registerListeners () {
   })
 
 
-    ipcMain.handle('git:getHistory', async () => {
+  ipcMain.handle('git:getHistory', async () => {
+    const gitCommand = `git log --all --parents --date-order --pretty=format:%H|%P|%D|%s`
     return new Promise((resolve, reject) => {
-      if (!repoPath) return reject('repoPath not set')
-      execFile('git',
-        ['rev-parse', '--is-inside-work-tree'],
-        { cwd: repoPath },
-        (err, stdout) => {
-          if (err || stdout.trim() !== 'true') {
-            return reject('Not a git repository at repoPath')
-          }
+      if (!repoPath) return reject({ error: 'repoPath not set', command: gitCommand })
 
-          execFile(
-            'git',
-            ['log', '--all', '--parents', '--date-order', '--pretty=format:%H|%P|%D|%s'],
-            { cwd: repoPath },
-            (err, stdout, stderr) => {
-              if (err) return reject(stderr || err.message)
-              resolve(stdout)
-            }
-          )
+      // First validate repo
+      execFile('git', ['rev-parse', '--is-inside-work-tree'], { cwd: repoPath }, (err, stdout) => {
+        if (err || stdout.trim() !== 'true') {
+          return reject({ error: 'Not a git repository at repoPath', command: gitCommand })
         }
-      )
+
+        execFile('git', gitCommand.split(' ').slice(1), { cwd: repoPath }, (err2, stdout2, stderr2) => {
+          if (err2) return reject({ error: stderr2 || err2.message, command: gitCommand })
+          resolve({ output: stdout2, command: gitCommand })
+        })
+      })
     })
   })
 
-  ipcMain.handle('git:run', async (_event, command: string) => {
-    console.log(`Executing git command: git ${command}`); // Debugging log
-    console.log(`Current repoPath: ${repoPath}`); // Debugging log
-    return new Promise((resolve, reject) => {
-      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
-        if (err) {
-          console.error(`Error executing git command: ${stderr || err.message}`); // Debugging log
-          reject(stderr || err.message);
-        } else {
-          console.log(`Git command output: ${stdout}`); // Debugging log
-          resolve(stdout);
-        }
-      });
-    });
-  });
+ipcMain.handle('git:run', async (_event, command: string): Promise<string> => {
+  const gitCommand = `git ${command}`
+  console.log(`Executing git command: ${gitCommand}`)
+  console.log(`Current repoPath: ${repoPath}`)
+
+  return new Promise((resolve, reject) => {
+    exec(gitCommand, { cwd: repoPath }, (err, stdout, stderr) => {
+      if (err) {
+        console.error(`Error executing git command: ${stderr || err.message}`)
+        return reject(
+          new Error(`Git command failed: ${gitCommand}\n${stderr || err.message}`)
+        )
+      }
+
+      console.log(`Git command output: ${stdout}`)
+      resolve(gitCommand)
+    })
+  })
+})
 
   ipcMain.handle('path:set', async (_event, path: string) => {
     return new Promise((resolve) => {
@@ -149,46 +147,42 @@ async function registerListeners () {
   });
 
   ipcMain.handle('git:startup', async () => {
+    // We'll return status, logs, and a helpful command string for frontend
+    const statusCmd = `git status`
+    const logsCmd = `git log -5 --pretty=format:"%h|%p|%an|%ar|%s"`
     return new Promise((resolve, reject) => {
       // Get git status
-      exec('git status', { cwd: repoPath }, (err, stdout) => {
-        const status = err ? 'error' : stdout
+      exec(statusCmd, { cwd: repoPath }, (err, stdout) => {
+        const status = err ? (err.message || 'error') : stdout
 
         // Get git log -5
-        exec(
-          `git log -5 --pretty=format:"%h|%p|%an|%ar|%s"`,
-          { cwd: repoPath },
-          (err, logs) => {
-            if (err) {
-              reject(err)
-            } else {
-              resolve({ status, logs })
-            }
+        exec(logsCmd, { cwd: repoPath }, (err2, logs) => {
+          if (err2) {
+            return reject({ error: err2.message || err2, command: `${statusCmd} && ${logsCmd}` })
+          } else {
+            return resolve({ status, logs, command: `${statusCmd} && ${logsCmd}` })
           }
-        )
+        })
       })
     })
   })
 
   ipcMain.handle('git:hasChanges', async () => {
+    const gitCommand = `git status --porcelain`
     return new Promise((resolve, reject) => {
-      if (!repoPath) return reject('repoPath not set')
-      
-      exec(
-        'git status --porcelain',
-        { cwd: repoPath },
-        (err, stdout, stderr) => {
-          if (err) {
-            return reject(stderr || err.message)
-          }
-          
-          // If stdout is empty, there are no changes
-          // If stdout has content, there are uncommitted/unstaged changes
-          const hasChanges = stdout.trim().length > 0
-          console.log('git status check:', hasChanges, stdout.trim())
-          resolve(hasChanges)
+      if (!repoPath) return reject({ error: 'repoPath not set', command: gitCommand })
+
+      exec(gitCommand, { cwd: repoPath }, (err, stdout, stderr) => {
+        if (err) {
+          return reject({ error: stderr || err.message, command: gitCommand })
         }
-      )
+
+        // If stdout is empty, there are no changes
+        // If stdout has content, there are uncommitted/unstaged changes
+        const hasChanges = stdout.trim().length > 0
+        console.log('git status check:', hasChanges, stdout.trim())
+        resolve({ hasChanges, command: gitCommand })
+      })
     })
   })
 }

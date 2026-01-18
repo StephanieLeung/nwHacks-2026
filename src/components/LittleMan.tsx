@@ -7,6 +7,7 @@ import { EllipsisVertical } from 'lucide-react'
 import { PopoverPortal, PopoverTrigger } from '@radix-ui/react-popover'
 import { useState, useEffect } from 'react'
 import { Input } from './ui/input';
+import { useTerminal } from '../context/TerminalContext';
 
 export interface LittleManProps {
   x?: number
@@ -35,31 +36,57 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
   const [commitMessage, setCommitMessage] = useState('');
   const [showCommitInput, setShowCommitInput] = useState(false);
 
+  const { setCommand } = useTerminal();
+
   const handleGitAction = (action: string) => {
     switch (action) {
       case 'Commit':
         setShowCommitInput(true);
         break;
-      case 'Push':
+      case 'Push': {
+        const cmd = `git push origin HEAD`;
+        setCommand(cmd);
         window.API.git.run('push origin HEAD')
-          .then(response => console.log('Push successful:', response))
+          .then(response => {
+            console.log('Push successful:', response);
+            return response;
+          })
           .catch(error => console.error('Push failed:', error));
         break;
-      case 'Pull':
+      }
+      case 'Pull': {
+        const cmd = `git pull`;
+        setCommand(cmd);
         window.API.git.run('pull')
-          .then(response => console.log('Pull successful:', response))
+          .then(response => {
+            console.log('Pull successful:', response)
+            return response;
+          })
           .catch(error => console.error('Pull failed:', error));
         break;
-      case 'Stash':
+      }
+      case 'Stash': {
+        const cmd = `git stash`;
+        setCommand(cmd);
         window.API.git.run('stash')
-          .then(response => console.log('Stash successful:', response))
+          .then(response => {
+            console.log('Stash successful:', response)
+            return response;
+          })
           .catch(error => console.error('Stash failed:', error));
         break;
-      case 'Unstash':
+      }
+      case 'Unstash': {
+        const cmd = `git stash pop`;
+        setCommand(cmd);
         window.API.git.run('stash pop')
-          .then(response => console.log('Unstash successful:', response))
+          .then(response => {
+            console.log('Unstash successful:', response)
+            return response;
+          })
           .catch(error => console.error('Unstash failed:', error));
         break;
+      }
       default:
         console.error('Unknown action:', action);
     }
@@ -69,6 +96,8 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
     console.log('Commit button clicked'); // Debugging log
     if (commitMessage.trim()) {
       console.log('Commit message:', commitMessage); // Debugging log
+      const statusCmd = `git status --porcelain`;
+      setCommand(statusCmd);
       window.API.git.run('status --porcelain')
         .then(statusOutput => {
           if (!statusOutput.trim()) {
@@ -76,6 +105,8 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
             return;
           }
 
+          const commitCmd = `git commit -m "${commitMessage}"`;
+          setCommand(commitCmd);
           window.API.git.run(`commit -m "${commitMessage}"`)
             .then(response => {
               console.log('Commit successful:', response);
