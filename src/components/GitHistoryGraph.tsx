@@ -9,11 +9,7 @@ interface CommitInfo {
   message: string;
 }
 
-interface GitTreeProps {
-    activeTab: 'branches' | 'commits' | 'log' | 'tree';
-  }
-
-export default function GitHistoryGraph({ activeTab }: GitTreeProps) {
+export default function GitHistoryGraph() {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
 
   useEffect(() => {
