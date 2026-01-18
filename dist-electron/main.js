@@ -131,12 +131,8 @@ async function registerListeners() {
             return reject(stderr || err.message);
           }
           const hasChanges = stdout.trim().length > 0;
-          console.log("running has changes: ", hasChanges, stdout.trim());
-          resolve({
-            hasChanges,
-            changes: stdout.trim()
-            // Optional: return the actual changes
-          });
+          console.log("git status check:", hasChanges, stdout.trim());
+          resolve(hasChanges);
         }
       );
     });
