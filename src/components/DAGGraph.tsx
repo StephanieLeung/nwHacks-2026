@@ -24,9 +24,11 @@ export function DAGGraph() {
         setLayoutNodes(nodes)
         
         // Find current commit (HEAD)
-        const headCommit = commits.find(c => 
-          c.refs.some(r => r.includes('HEAD'))
+        const head = await window.API.git.run(`rev-parse HEAD`)
+        const headCommit = commits.find(c =>
+          c.hash = head.trim()
         )
+        
         if (headCommit) setCurrentCommit(headCommit.hash)
         
         console.log('DAG layout created:', nodes)
