@@ -3,10 +3,12 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/electron-vite.animate.svg'
 import { GitVisualizer } from './components/GitVisualizer';
 import './App.css'
+import GitHistoryGraph from './components/GitHistoryGraph';
 
 export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 flex items-center justify-center p-8">
+      <GitHistoryGraph />
       <GitVisualizer />
     </div>
   );
