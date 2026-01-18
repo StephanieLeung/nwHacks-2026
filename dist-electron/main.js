@@ -120,6 +120,27 @@ async function registerListeners() {
       });
     });
   });
+  ipcMain.handle("git:hasChanges", async () => {
+    return new Promise((resolve, reject) => {
+      if (!repoPath) return reject("repoPath not set");
+      exec(
+        "git status --porcelain",
+        { cwd: repoPath },
+        (err, stdout, stderr) => {
+          if (err) {
+            return reject(stderr || err.message);
+          }
+          const hasChanges = stdout.trim().length > 0;
+          console.log("running has changes: ", hasChanges, stdout.trim());
+          resolve({
+            hasChanges,
+            changes: stdout.trim()
+            // Optional: return the actual changes
+          });
+        }
+      );
+    });
+  });
 }
 app.whenReady().then(() => {
   createWindow();
