@@ -5,19 +5,6 @@ interface MenuBarProps {
   setActiveTab: (tab: 'landing' | 'log' | 'tree') => void;
 }
 
-async function pushHandler() {
-  await window.API.git.run('push origin HEAD');
-}
-
-async function pullHandler() {
-  await window.API.git.run('pull');
-  // TODO: make the little man change to pulling animation, update the graph
-}
-
-async function fetchHandler() {
-  await window.API.git.run('fetch');
-}
-
 export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
   return (
     <div className="bg-purple-50 border-b-2 border-purple-200">
