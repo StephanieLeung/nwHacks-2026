@@ -11,7 +11,7 @@ export function DAGGraph() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [currentCommit, setCurrentCommit] = useState<string | null>(null)
   const [checkingOutBranch, setCheckingOutBranch] = useState<string | null>(null)
-  const { refetchGit, characterState, animationState, triggerAnimation } = useGit()
+  const { status, refetchGit, characterState, animationState, triggerAnimation } = useGit()
   const hoverTimeoutRef = useState<NodeJS.Timeout | null>(null)[0]
 
   const { setCommand } = useTerminal();
