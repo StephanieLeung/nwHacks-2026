@@ -1,10 +1,13 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
+import { exec } from 'child_process'
 import path from 'node:path'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+let repoPath: string = ""
 
 // The built directory structure
 //
@@ -47,6 +50,34 @@ function createWindow() {
   }
 }
 
+async function registerListeners() {
+  ipcMain.handle('git:run', async (_event, command: string) => {
+    return new Promise((resolve, reject) => {
+      // run git with cwd set to repoPath
+      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
+          console.log(`Running git ${command} in ${repoPath}`);
+          if (stdout) console.log('stdout:', stdout);
+          if (stderr) console.log('stderr:', stderr);
+
+          if (err) {
+            reject(stderr || err.message)
+          } else {
+            resolve(stdout)
+          }
+        }
+      );
+    });
+  });
+
+  ipcMain.handle('path:set', async (_event, path: string) => {
+    return new Promise((resolve) => {
+      repoPath = path
+      console.log(`repoPath set to ${repoPath}`)
+      resolve(repoPath)
+    });
+  });
+}
+
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
@@ -65,4 +96,9 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+
+// app.whenReady().then(createWindow)
+app.on('ready', createWindow)
+  .whenReady()
+  .then(registerListeners)
+  .catch(e => console.error(e))
