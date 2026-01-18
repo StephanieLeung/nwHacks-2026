@@ -5,6 +5,19 @@ interface MenuBarProps {
   setActiveTab: (tab: 'branches' | 'commits' | 'log' | 'tree') => void;
 }
 
+async function pushHandler() {
+  await window.API.git.run('push origin HEAD');
+}
+
+async function pullHandler() {
+  await window.API.git.run('pull');
+  // TODO: make the little man change to pulling animation, update the graph
+}
+
+async function fetchHandler() {
+  await window.API.git.run('fetch');
+}
+
 export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
   return (
     <div className="bg-purple-50 border-b-2 border-purple-200">
@@ -58,14 +71,17 @@ export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
 
       {/* Action Buttons */}
       <div className="flex items-center gap-2 px-4 py-3 bg-white">
-        <button className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
+        <button className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm"
+            onClick={pullHandler}>
           <RefreshCw className="w-3.5 h-3.5" />
           Pull
         </button>
-        <button className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-gradient-to-r from-blue-100 to-cyan-100 hover:from-blue-200 hover:to-cyan-200 border-2 border-blue-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
+        <button className="px-3 py-1.5 text-xs font-semibold text-blue-700 bg-gradient-to-r from-blue-100 to-cyan-100 hover:from-blue-200 hover:to-cyan-200 border-2 border-blue-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm"
+            onClick={pushHandler}>
           Push
         </button>
-        <button className="px-3 py-1.5 text-xs font-semibold text-pink-700 bg-gradient-to-r from-pink-100 to-rose-100 hover:from-pink-200 hover:to-rose-200 border-2 border-pink-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
+        <button className="px-3 py-1.5 text-xs font-semibold text-pink-700 bg-gradient-to-r from-pink-100 to-rose-100 hover:from-pink-200 hover:to-rose-200 border-2 border-pink-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm"
+            onClick={fetchHandler}>
           Fetch
         </button>
         <div className="flex-1"></div>
