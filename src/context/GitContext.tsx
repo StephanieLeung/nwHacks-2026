@@ -32,7 +32,7 @@ export function GitProvider({ children }: { children: React.ReactNode }) {
       setStatus(data.status)
       setLogs(data.logs)
       // Check for unstaged changes
-      const hasChanges = await window.ipcRenderer.invoke('git:hasUnstagedChanges')
+      const hasChanges = await window.ipcRenderer.invoke('git:hasChanges')
       setHasUnstagedChanges(hasChanges)
       setCharacterState(hasChanges ? 'dirty' : 'idle')
       console.log('Git data refreshed:', data)
