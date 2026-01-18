@@ -6,12 +6,14 @@ export interface GitData {
   loading: boolean
   error: string | null
   characterState: 'idle' | 'working' | 'dirty'
+  animationState: 'none' | 'pulling' | 'pushing'
   hasUnstagedChanges: boolean
 }
 
 interface GitContextType extends GitData {
   refetchGit: () => Promise<void>
   setCharacterState: (state: 'idle' | 'working' | 'dirty') => void
+  triggerAnimation: (type: 'pulling' | 'pushing') => void
 }
 
 const GitContext = createContext<GitContextType | undefined>(undefined)
@@ -22,6 +24,7 @@ export function GitProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [characterState, setCharacterState] = useState<'idle' | 'working' | 'dirty'>('idle')
+  const [animationState, setAnimationState] = useState<'none' | 'pulling' | 'pushing'>('none')
   const [hasUnstagedChanges, setHasUnstagedChanges] = useState(false)
 
   const refetchGit = useCallback(async () => {
@@ -43,8 +46,18 @@ export function GitProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const triggerAnimation = useCallback((type: 'pulling' | 'pushing') => {
+    setAnimationState(type)
+    // Reset animation after 4 seconds
+    setTimeout(() => {
+      setAnimationState('none')
+      // Refetch git data after animation completes
+      refetchGit()
+    }, 4000)
+  }, [refetchGit])
+
   return (
-    <GitContext.Provider value={{ status, logs, loading, error, refetchGit, characterState, setCharacterState, hasUnstagedChanges }}>
+    <GitContext.Provider value={{ status, logs, loading, error, refetchGit, characterState, setCharacterState, animationState, triggerAnimation, hasUnstagedChanges }}>
       {children}
     </GitContext.Provider>
   )
