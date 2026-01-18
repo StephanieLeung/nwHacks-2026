@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 html {box-sizing: border-box;}
-*, *:before, *:after {box-sizing: inherit;}
 html, body {height: 100%; margin: 0;}
 
 #root {
     padding: 0;
+    padding-top: 44px;
     width: 100%;
-    height: calc(100% - 44px);
+    height: 100%;
 }
 
 #titlebar {
