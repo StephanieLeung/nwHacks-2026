@@ -63,7 +63,11 @@ const getColorClasses = (color: string) => {
 export function GitTree({ activeTab }: GitTreeProps) {
   if (activeTab === 'tree') {
     // return <RepositoryTree />;
-    return <GitHistoryGraph />
+    return (
+      <div className="flex-1 h-full overflow-hidden pt-4">
+        <GitHistoryGraph />
+      </div>
+  )
   }
 
   if (activeTab === 'branches') {

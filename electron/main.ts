@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import { exec } from 'node:child_process'
@@ -99,10 +99,9 @@ async function registerListeners () {
     return new Promise((resolve, reject) => {
       exec(
         `git log --pretty=format:"%h|%p|%an|%ar|%s" --all`,
-        { cwd: repoPath }, 
+        { cwd: repoPath },
         (err, stdout) => {
           if (err) return reject(err);
-  
           const commits = stdout
             .split("\n")
             .map((line) => {
@@ -115,13 +114,12 @@ async function registerListeners () {
                 message,
               };
             });
-  
+
           resolve(commits);
         }
       );
     });
   });
-  
 
   ipcMain.handle('path:set', async (_event, path: string) => {
     return new Promise((resolve) => {
@@ -133,6 +131,24 @@ async function registerListeners () {
 
   ipcMain.handle('window:minimize', () => win?.minimize());
   ipcMain.handle('window:close', () => win?.close());
+  ipcMain.handle('path:select', async () => {
+    try {
+      const result = await dialog.showOpenDialog({
+        properties: ['openDirectory']
+      });
+
+      if (result.canceled || result.filePaths.length === 0) {
+        return null;
+      }
+
+      repoPath = result.filePaths[0];
+      console.log(`repoPath set to ${repoPath} via dialog`);
+      return repoPath;
+    } catch (err) {
+      console.error('Error selecting path:', err);
+      throw err;
+    }
+  });
 }
 
 

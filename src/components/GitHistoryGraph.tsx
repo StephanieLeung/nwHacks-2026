@@ -9,76 +9,73 @@ interface CommitInfo {
   message: string;
 }
 
-interface GitTreeProps {
-    activeTab: 'branches' | 'commits' | 'log' | 'tree';
-  }
-
-export default function GitHistoryGraph({ activeTab }: GitTreeProps) {
+export default function GitHistoryGraph() {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
 
   useEffect(() => {
     window.API.git.getHistory().then((data: CommitInfo[]) => {
-        setCommits(data);
+      setCommits(data);
     });
-    
   }, []);
 
   if (!commits.length) return <p>Loading commit history...</p>;
 
   const template = templateExtend(TemplateName.Metro, {
     branch: {
-      lineWidth: 3,
-      spacing: 50,
+      lineWidth: 2,
+      spacing: 35, // tighter horizontal spacing
     },
     commit: {
-      spacing: 30,
-      dot: {
-        size: 5,
-      },
+      spacing: 20, // less vertical spacing between commits
+      dot: { size: 4 },
       message: {
         display: false,
-        displayAuthor: false,
-        displayHash: false,
       },
     },
   });
 
-    return (
-        <Gitgraph options={{ template }}>
-            {(gitgraph) => {
-            const branchMap = new Map<string, any>();
-            let master = gitgraph.branch("master");
-            branchMap.set("master", master);
+  return (
+    <div
+    //   style={{
+    //     maxHeight: "600px",     // ⬅ makes it shorter (adjust as needed)
+    //     overflowY: "auto",      // ⬅ enables scrolling
+    //     border: "1px solid #444",
+    //     borderRadius: "6px",
+    //     padding: "8px",
+    //   }}
+        className="h-full overflow-y-auto"
+    >
+      <Gitgraph options={{ template }}>
+        {(gitgraph) => {
+          const branchMap = new Map<string, any>();
+          let master = gitgraph.branch("master");
+          branchMap.set("master", master);
 
-            // Simple heuristic: treat parent[0] chain as master
-            commits.forEach((commit) => {
-                const parent = commit.parents[0];
-                const branch = branchMap.get(commit.hash) || branchMap.get("master");
+          commits.forEach((commit) => {
+            const branch =
+              branchMap.get(commit.hash) || branchMap.get("master");
 
-                const gCommit = branch.commit({
-                subject: commit.message,
-                author: commit.author,
-                hash: commit.hash,
-                });
-
-                // If merge commit: call merge()
-                if (commit.parents.length > 1) {
-                commit.parents.slice(1).forEach((p) => {
-                    const parentBranch =
-                    branchMap.get(p) || gitgraph.branch(p.slice(0, 6));
-                    parentBranch.commit();
-                    branch.merge(parentBranch);
-                });
-                }
-
-                // Keep branch map in sync
-                if (!branchMap.has(commit.hash)) {
-                branchMap.set(commit.hash, branch);
-                }
+            branch.commit({
+              subject: commit.message,
+              author: commit.author,
+              hash: commit.hash,
             });
-            }}
-        </Gitgraph>
-        );
-    }
 
-  
+            if (commit.parents.length > 1) {
+              commit.parents.slice(1).forEach((p) => {
+                const parentBranch =
+                  branchMap.get(p) || gitgraph.branch(p.slice(0, 6));
+                parentBranch.commit();
+                branch.merge(parentBranch);
+              });
+            }
+
+            if (!branchMap.has(commit.hash)) {
+              branchMap.set(commit.hash, branch);
+            }
+          });
+        }}
+      </Gitgraph>
+    </div>
+  );
+}
