@@ -6,7 +6,7 @@ import './App.css'
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 flex items-center justify-center p-8">
+    <div className={"h-full m-0 p-0"}>
       <GitVisualizer />
     </div>
   );
