@@ -10,6 +10,7 @@ export function TerminalPanel() {
         <Terminal className="w-4 h-4 text-purple-500" />
         <span className="text-purple-600 font-mono text-sm font-semibold">$</span>
         <input
+          disabled
           type="text"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
