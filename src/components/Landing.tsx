@@ -54,14 +54,14 @@ export default function Landing() {
       </div>
 
       {selectedPath && (
-        <p className="mt-4 text-sm break-all">Selected: {selectedPath}</p>
+        <p className="mt-4 text-xs break-all">Selected: {selectedPath}</p>
       )}
 
       {error && (
         <p className="mt-4 text-sm text-red-500">Error: {error}</p>
       )}
 
-      <p className="mt-8 text-xs text-gray-400">
+      <p className="mt-6 text-xs text-gray-400">
         Tip: select the top-level folder that contains the `.git` directory.
       </p>
     </div>
