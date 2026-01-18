@@ -70,6 +70,7 @@ async function registerListeners() {
         { cwd: repoPath },
         (err, stdout) => {
           if (err) return reject(err);
+          console.log(`Git log response: ${stdout}`);
           const commits = stdout.split("\n").map((line) => {
             const [hash, parents, author, date, message] = line.split("|");
             return {
