@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
-import { exec } from 'node:child_process'
+import { exec, execFile } from 'node:child_process'
 import path from 'node:path'
 
 const require = createRequire(import.meta.url)
@@ -77,49 +77,40 @@ async function registerListeners () {
     console.log(message)
   })
 
-  ipcMain.handle('git:run', async (_event, command: string) => {
-    return new Promise((resolve, reject) => {
-      // run git with cwd set to repoPath
-      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
-          console.log(`Running git ${command} in ${repoPath}`);
-          if (stdout) console.log('stdout:', stdout);
-          if (stderr) console.log('stderr:', stderr);
 
-          if (err) {
-            reject(stderr || err.message)
-          } else {
-            resolve(stdout)
-          }
-        }
-      );
-    });
-  });
-
-  ipcMain.handle("git:getHistory", () => {
+    ipcMain.handle('git:getHistory', async () => {
     return new Promise((resolve, reject) => {
-      exec(
-        `git log --pretty=format:"%h|%p|%an|%ar|%s" --all`,
+      if (!repoPath) return reject('repoPath not set')
+      execFile('git',
+        ['rev-parse', '--is-inside-work-tree'],
         { cwd: repoPath },
         (err, stdout) => {
-          if (err) return reject(err);
-          const commits = stdout
-            .split("\n")
-            .map((line) => {
-              const [hash, parents, author, date, message] = line.split("|");
-              return {
-                hash,
-                parents: parents ? parents.split(" ") : [],
-                author,
-                date,
-                message,
-              };
-            });
+          if (err || stdout.trim() !== 'true') {
+            return reject('Not a git repository at repoPath')
+          }
 
-          resolve(commits);
+          execFile(
+            'git',
+            ['log', '--all', '--parents', '--date-order', '--pretty=format:%H|%P|%D|%s'],
+            { cwd: repoPath },
+            (err, stdout, stderr) => {
+              if (err) return reject(stderr || err.message)
+              resolve(stdout)
+            }
+          )
         }
-      );
-    });
-  });
+      )
+    })
+  })
+
+  ipcMain.handle('git:run', async (_event, command: string) => {
+    return new Promise((resolve, reject) => {
+      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
+        if (err) reject(stderr || err.message)
+        else resolve(stdout)
+      })
+    })
+  })
 
   ipcMain.handle('path:set', async (_event, path: string) => {
     return new Promise((resolve) => {

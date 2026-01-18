@@ -1,7 +1,9 @@
 import { GitBranch, GitCommit, GitMerge, Circle, FileCode } from 'lucide-react';
 import { RepositoryTree } from './RepositoryTree';
 import GitHistoryGraph from './GitHistoryGraph';
+import { DAGGraph } from './DAGGraph'; 
 import { useGit } from '../context/GitContext';
+import { useEffect, useState } from 'react'
 
 interface GitTreeProps {
   activeTab: 'branches' | 'commits' | 'log' | 'tree';
@@ -30,25 +32,6 @@ const mockFiles = [
   { name: 'config.json', status: 'deleted', lines: '-20' },
 ];
 
-const mockLog = [
-  '$ git status',
-  'On branch main',
-  'Your branch is ahead of \'origin/main\' by 3 commits.',
-  '  (use "git push" to publish your local commits)',
-  '',
-  'Changes not staged for commit:',
-  '  (use "git add <file>..." to update what will be committed)',
-  '  modified:   src/components/Header.tsx',
-  '',
-  'no changes added to commit',
-  '',
-  '$ git log --oneline -5',
-  '7f3a2c1 Add user authentication',
-  'b4e9d82 Fix header styling issue',
-  'a1c4f5e Update dependencies',
-  '9e2b8a3 Merge feature branch',
-  '3c7f1d9 Add login component',
-];
 
 const getColorClasses = (color: string) => {
   const colors: Record<string, { bg: string; border: string; text: string; dot: string }> = {
@@ -63,11 +46,27 @@ const getColorClasses = (color: string) => {
 
 export function GitTree({ activeTab }: GitTreeProps) {
   const { status, logs, loading } = useGit();
+  const [commits, setCommits] = useState<any[]>([])
+
+  //fetch real commits on mount
+  useEffect(() => {
+    async function fetchCommits() {
+      try {
+        const data = await window.ipcRenderer.invoke('git:getHistory')
+        setCommits(data)
+        console.log('Real commits loaded:', data)
+      } catch (err) {
+        console.error('Error fetching commits:', err)
+      }
+    }
+    fetchCommits()
+  }, [])
+
   if (activeTab === 'tree') {
     // return <RepositoryTree />;
     return (
       <div className="flex-1 h-full overflow-hidden pt-4">
-        <GitHistoryGraph />
+        <DAGGraph />
       </div>
   )
   }
