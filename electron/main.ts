@@ -130,6 +130,9 @@ async function registerListeners () {
       resolve(repoPath)
     });
   });
+
+  ipcMain.handle('window:minimize', () => win?.minimize());
+  ipcMain.handle('window:close', () => win?.close());
 }
 
 

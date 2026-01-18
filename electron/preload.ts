@@ -56,3 +56,8 @@ export const api = {
 }
 
 contextBridge.exposeInMainWorld('API', api)
+
+contextBridge.exposeInMainWorld('windowControls', {
+  minimize: () => ipcRenderer.invoke('window:minimize'),
+  close: () => ipcRenderer.invoke('window:close'),
+});
