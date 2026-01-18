@@ -1,5 +1,6 @@
 import { GitBranch, GitCommit, GitMerge, Circle, FileCode } from 'lucide-react';
 import { RepositoryTree } from './RepositoryTree';
+import GitHistoryGraph from './GitHistoryGraph';
 
 interface GitTreeProps {
   activeTab: 'branches' | 'commits' | 'log' | 'tree';
@@ -61,7 +62,8 @@ const getColorClasses = (color: string) => {
 
 export function GitTree({ activeTab }: GitTreeProps) {
   if (activeTab === 'tree') {
-    return <RepositoryTree />;
+    // return <RepositoryTree />;
+    return <GitHistoryGraph />
   }
 
   if (activeTab === 'branches') {

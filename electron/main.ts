@@ -1,11 +1,13 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
+import { exec } from 'node:child_process'
 import path from 'node:path'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
+let repoPath = ""
 // The built directory structure
 //
 // ├─┬─┬ dist
@@ -67,4 +69,73 @@ app.on('activate', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+async function registerListeners () {
+  /**
+   * This comes from bridge integration, check bridge.ts
+   */
+  ipcMain.on('message', (_, message) => {
+    console.log(message)
+  })
+
+  ipcMain.handle('git:run', async (_event, command: string) => {
+    return new Promise((resolve, reject) => {
+      // run git with cwd set to repoPath
+      exec(`git ${command}`, { cwd: repoPath }, (err, stdout, stderr) => {
+          console.log(`Running git ${command} in ${repoPath}`);
+          if (stdout) console.log('stdout:', stdout);
+          if (stderr) console.log('stderr:', stderr);
+
+          if (err) {
+            reject(stderr || err.message)
+          } else {
+            resolve(stdout)
+          }
+        }
+      );
+    });
+  });
+
+  ipcMain.handle("git:getHistory", () => {
+    return new Promise((resolve, reject) => {
+      exec(
+        `git log --pretty=format:"%h|%p|%an|%ar|%s" --all`,
+        { cwd: repoPath }, 
+        (err, stdout) => {
+          if (err) return reject(err);
+  
+          const commits = stdout
+            .split("\n")
+            .map((line) => {
+              const [hash, parents, author, date, message] = line.split("|");
+              return {
+                hash,
+                parents: parents ? parents.split(" ") : [],
+                author,
+                date,
+                message,
+              };
+            });
+  
+          resolve(commits);
+        }
+      );
+    });
+  });
+  
+
+  ipcMain.handle('path:set', async (_event, path: string) => {
+    return new Promise((resolve) => {
+      repoPath = path
+      console.log(`repoPath set to ${repoPath}`)
+      resolve(repoPath)
+    });
+  });
+}
+
+
+app.whenReady()
+  .then(() => {
+    createWindow();
+    return registerListeners();
+  })
+  .catch(e => console.error(e));
