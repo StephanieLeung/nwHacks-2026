@@ -46,8 +46,7 @@ export function DAGGraph() {
     try {
       await window.API.git.run(`checkout ${branchName}`)
       console.log(`Checked out to ${branchName}`)
-      // Refetch git data to update the DAG
-      await refetchGit()
+      
       // Rebuild DAG
       const commits = await fetchCommitsForDAG()
       const branches = extractBranches(commits)
@@ -59,6 +58,9 @@ export function DAGGraph() {
         c.refs.some(r => r.includes('HEAD'))
       )
       if (headCommit) setCurrentCommit(headCommit.hash)
+      
+      // Refetch git data to update character state
+      await refetchGit()
     } catch (err) {
       console.error(`Error checking out ${branchName}:`, err)
       alert(`Failed to checkout ${branchName}: ${err}`)
