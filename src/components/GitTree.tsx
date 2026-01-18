@@ -5,6 +5,7 @@ import { DAGGraph } from './DAGGraph';
 import { useGit } from '../context/GitContext';
 import { useEffect, useState } from 'react'
 import Landing from './Landing';
+import { usePath } from '../context/PathContext';
 
 interface GitTreeProps {
   // activeTab: 'branches' | 'commits' | 'log' | 'tree';
@@ -47,8 +48,16 @@ const getColorClasses = (color: string) => {
 };
 
 export function GitTree({ activeTab }: GitTreeProps) {
-  const { status, logs, loading } = useGit();
+  const { status, logs, loading, refetchGit } = useGit();
   const [commits, setCommits] = useState<any[]>([])
+  const { path } = usePath();
+
+  useEffect(() => {
+    const refetch = async () => {
+      await refetchGit();
+    }
+    refetch();
+  }, [path, refetchGit])
 
   //fetch real commits on mount
   useEffect(() => {
