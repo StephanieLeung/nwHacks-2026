@@ -34,7 +34,6 @@ export function DAGGraph() {
         const headCommit = commits.find(c =>
           c.hash = head.trim()
         )
-
         if (headCommit) setCurrentCommit(headCommit.hash)
         
         console.log('DAG layout created:', nodes)
@@ -47,7 +46,7 @@ export function DAGGraph() {
     }
 
     buildDAG()
-  }, [refetchGit])
+  }, [status, refetchGit])
 
   const handleCheckoutBranch = async (branchName: string) => {
     setCheckingOutBranch(branchName)
