@@ -18,14 +18,19 @@ export function GitVisualizer() {
     // Fetch on mount
     refetchGit();
 
-    // Test the git:hasChanges endpoint
-    window.API.git.hasChanges()
-      .then(response => {
-        console.log('git:hasChanges response:', response);
-      })
-      .catch(error => {
-        console.error('Error calling git:hasChanges:', error);
-      });
+    // Poll the git:hasChanges endpoint every 5 seconds
+    const intervalId = setInterval(() => {
+      window.API.git.hasChanges()
+        .then(response => {
+          console.log('git:hasChanges response:', response);
+        })
+        .catch(error => {
+          console.error('Error calling git:hasChanges:', error);
+        });
+    }, 5000); // 5 seconds
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, [refetchGit]);
 
   if (loading) {
