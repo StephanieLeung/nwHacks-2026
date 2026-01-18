@@ -70,7 +70,7 @@ export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-white">
+      {/* <div className="flex items-center gap-2 px-4 py-3 bg-white">
         <button className="px-3 py-1.5 text-xs font-semibold text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-200 rounded-full flex items-center gap-1.5 transition-all shadow-sm">
           <RefreshCw className="w-3.5 h-3.5" />
           Pull
@@ -85,7 +85,7 @@ export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
         <button className="p-1.5 text-purple-400 hover:text-purple-600 hover:bg-purple-100 rounded-full transition-all">
           <Settings className="w-4 h-4" />
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

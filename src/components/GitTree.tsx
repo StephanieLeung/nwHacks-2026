@@ -84,7 +84,7 @@ export function GitTree({ activeTab }: GitTreeProps) {
   if (activeTab === 'tree') {
     // return <RepositoryTree />;
     return (
-      <div className="flex-1 h-full overflow-hidden pt-4">
+      <div className="flex-1 h-full w-full overflow-hidden">
         <DAGGraph />
       </div>
   )
