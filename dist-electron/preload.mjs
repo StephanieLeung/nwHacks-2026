@@ -39,7 +39,7 @@ const api = {
   path: {
     // Sets the path in main process (existing)
     set: (path) => electron.ipcRenderer.invoke("path:set", path),
-    // Opens a native folder chooser in main and returns selected path (or null)
+    // opens a native folder chooser in main and returns selected path (or null)
     select: () => electron.ipcRenderer.invoke("path:select")
   }
 };
