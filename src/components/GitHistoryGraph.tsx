@@ -17,12 +17,9 @@ export default function GitHistoryGraph({ activeTab }: GitTreeProps) {
   const [commits, setCommits] = useState<CommitInfo[]>([]);
 
   useEffect(() => {
-    // window.API.git.run("log --graph --pretty=format:'%h' --all").then((data: CommitInfo[]) => {
-    setTimeout(() => {
-        window.API.git.getHistory().then((data: CommitInfo[]) => {
-            setCommits(data);
-        });
-    }, 1000);  
+    window.API.git.getHistory().then((data: CommitInfo[]) => {
+        setCommits(data);
+    });
     
   }, []);
 
