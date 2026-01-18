@@ -1,13 +1,12 @@
 import React, { useState } from "react";
+import { usePath } from "../context/PathContext";
 
-interface LandingProps {
-  setAppPath: (p: string) => void;
-}
 
-export default function Landing({ setAppPath }: LandingProps) {
+export default function Landing() {
   const [busy, setBusy] = useState(false);
   const [selectedPath, setSelectedPath] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  const { setPath } = usePath();
 
   // Open native folder chooser (main process) and set repo path
   async function chooseRepository() {
@@ -25,7 +24,7 @@ export default function Landing({ setAppPath }: LandingProps) {
         await window.API.path.set(path);
 
         // Update App state so it switches to GitVisualizer
-        setAppPath(path);
+        setPath(path);
       } else {
         // user cancelled
         setError(null);

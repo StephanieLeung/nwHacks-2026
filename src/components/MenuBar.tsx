@@ -1,8 +1,8 @@
-import { GitBranch, GitCommit, FileText, RefreshCw, Settings, FolderTree } from 'lucide-react';
+import { GitBranch, GitCommit, FileText, RefreshCw, Settings, FolderTree, Smile } from 'lucide-react';
 
 interface MenuBarProps {
-  activeTab: 'branches' | 'commits' | 'log' | 'tree';
-  setActiveTab: (tab: 'branches' | 'commits' | 'log' | 'tree') => void;
+  activeTab: 'landing' | 'log' | 'tree';
+  setActiveTab: (tab: 'landing' | 'log' | 'tree') => void;
 }
 
 async function pushHandler() {
@@ -23,7 +23,7 @@ export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
     <div className="bg-purple-50 border-b-2 border-purple-200">
       {/* Tabs */}
       <div className="flex items-center px-3 pt-2 gap-1">
-        <button
+        {/* <button
           onClick={() => setActiveTab('branches')}
           className={`px-4 py-2 text-xs font-semibold flex items-center gap-2 rounded-t-xl transition-all ${
             activeTab === 'branches'
@@ -44,7 +44,20 @@ export function MenuBar({ activeTab, setActiveTab }: MenuBarProps) {
         >
           <GitCommit className="w-4 h-4" />
           Commits
+        </button> */}
+
+        <button 
+          onClick={() => setActiveTab('landing')}
+          className={`px-4 py-2 text-xs font-semibold flex items-center gap-2 rounded-t-xl transition-all ${
+            activeTab === 'landing'
+              ? 'bg-white text-purple-600 shadow-sm border-2 border-b-0 border-purple-200'
+              : 'text-purple-400 hover:text-purple-600 hover:bg-purple-100/50'
+          }`}
+        >
+          <Smile className='w-4 h-4' />
+          Landing
         </button>
+
         <button
           onClick={() => setActiveTab('tree')}
           className={`px-4 py-2 text-xs font-semibold flex items-center gap-2 rounded-t-xl transition-all ${
