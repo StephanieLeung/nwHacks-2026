@@ -76,6 +76,10 @@ async function registerListeners() {
       resolve(repoPath)
     });
   });
+
+  ipcMain.handle('path:get', async () => {
+    return repoPath
+  });
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -95,7 +99,6 @@ app.on('activate', () => {
     createWindow()
   }
 })
-
 
 // app.whenReady().then(createWindow)
 app.on('ready', createWindow)

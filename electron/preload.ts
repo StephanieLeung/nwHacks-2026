@@ -50,7 +50,8 @@ export const api = {
   },
 
   path: {
-    set: (path: string) => ipcRenderer.send('path:set', path)
+    set: (path: string) => ipcRenderer.invoke('path:set', path),
+    get: () => ipcRenderer.invoke('path:get')
   }
 }
 
