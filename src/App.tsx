@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { GitVisualizer } from './components/GitVisualizer'
 import Landing from './components/Landing'
+import { GitProvider } from './context/GitContext'
 import './App.css'
 
 export default function App() {
@@ -11,7 +12,9 @@ export default function App() {
       {path.trim() === '' ? (
         <Landing setAppPath={setPath} />
       ) : (
+      <GitProvider>
         <GitVisualizer />
+      </GitProvider>
       )}
     </div>
   )

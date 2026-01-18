@@ -1,6 +1,7 @@
 import { GitBranch, GitCommit, GitMerge, Circle, FileCode } from 'lucide-react';
 import { RepositoryTree } from './RepositoryTree';
 import GitHistoryGraph from './GitHistoryGraph';
+import { useGit } from '../context/GitContext';
 
 interface GitTreeProps {
   activeTab: 'branches' | 'commits' | 'log' | 'tree';
@@ -61,6 +62,7 @@ const getColorClasses = (color: string) => {
 };
 
 export function GitTree({ activeTab }: GitTreeProps) {
+  const { status, logs, loading } = useGit();
   if (activeTab === 'tree') {
     // return <RepositoryTree />;
     return (
@@ -172,27 +174,44 @@ export function GitTree({ activeTab }: GitTreeProps) {
           </div>
         </div>
       </div>
+
     );
   }
 
   // Log view
-  return (
+return (
     <div className="flex-1 p-4 overflow-auto bg-purple-50/30">
       <div className="font-mono text-xs space-y-1 bg-white p-4 rounded-2xl border-2 border-purple-100">
-        {mockLog.map((line, index) => (
-          <div
-            key={index}
-            className={`${
-              line.startsWith('$')
-                ? 'text-purple-600 font-semibold'
-                : line.includes('modified:')
-                ? 'text-yellow-600'
-                : 'text-gray-600'
-            }`}
-          >
-            {line || '\u00A0'}
-          </div>
-        ))}
+        {loading ? (
+          <div className="text-gray-500">Loading git status...</div>
+        ) : (
+          <>
+            <div className="text-purple-600 font-semibold">$ git status</div>
+            {status.split('\n').map((line, index) => (
+              <div
+                key={index}
+                className={`${
+                  line.includes('modified:')
+                    ? 'text-yellow-600'
+                    : line.includes('deleted:')
+                    ? 'text-red-600'
+                    : line.includes('new file:')
+                    ? 'text-green-600'
+                    : 'text-gray-600'
+                }`}
+              >
+                {line || '\u00A0'}
+              </div>
+            ))}
+            
+            <div className="mt-4 text-purple-600 font-semibold">$ git log -5</div>
+            {logs.split('\n').map((line, index) => (
+              <div key={index} className="text-gray-600">
+                {line || '\u00A0'}
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
