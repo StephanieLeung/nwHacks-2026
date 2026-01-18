@@ -44,3 +44,7 @@ const api = {
   }
 };
 electron.contextBridge.exposeInMainWorld("API", api);
+electron.contextBridge.exposeInMainWorld("windowControls", {
+  minimize: () => electron.ipcRenderer.invoke("window:minimize"),
+  close: () => electron.ipcRenderer.invoke("window:close")
+});

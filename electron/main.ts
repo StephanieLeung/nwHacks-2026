@@ -149,6 +149,28 @@ async function registerListeners () {
       throw err;
     }
   });
+
+  ipcMain.handle('git:startup', async () => {
+    return new Promise((resolve, reject) => {
+      // Get git status
+      exec('git status', { cwd: repoPath }, (err, stdout) => {
+        const status = err ? 'error' : stdout
+
+        // Get git log -5
+        exec(
+          `git log -5 --pretty=format:"%h|%p|%an|%ar|%s"`,
+          { cwd: repoPath },
+          (err, logs) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve({ status, logs })
+            }
+          }
+        )
+      })
+    })
+  })
 }
 
 

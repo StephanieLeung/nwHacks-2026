@@ -70,7 +70,6 @@ async function registerListeners() {
         { cwd: repoPath },
         (err, stdout) => {
           if (err) return reject(err);
-          console.log(`Git log response: ${stdout}`);
           const commits = stdout.split("\n").map((line) => {
             const [hash, parents, author, date, message] = line.split("|");
             return {
@@ -93,6 +92,8 @@ async function registerListeners() {
       resolve(repoPath);
     });
   });
+  ipcMain.handle("window:minimize", () => win == null ? void 0 : win.minimize());
+  ipcMain.handle("window:close", () => win == null ? void 0 : win.close());
   ipcMain.handle("path:select", async () => {
     try {
       const result = await dialog.showOpenDialog({
@@ -108,6 +109,24 @@ async function registerListeners() {
       console.error("Error selecting path:", err);
       throw err;
     }
+  });
+  ipcMain.handle("git:startup", async () => {
+    return new Promise((resolve, reject) => {
+      exec("git status", { cwd: repoPath }, (err, stdout) => {
+        const status = err ? "error" : stdout;
+        exec(
+          `git log -5 --pretty=format:"%h|%p|%an|%ar|%s"`,
+          { cwd: repoPath },
+          (err2, logs) => {
+            if (err2) {
+              reject(err2);
+            } else {
+              resolve({ status, logs });
+            }
+          }
+        );
+      });
+    });
   });
 }
 app.whenReady().then(() => {
