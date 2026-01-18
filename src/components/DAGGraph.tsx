@@ -24,9 +24,11 @@ export function DAGGraph() {
         setLayoutNodes(nodes)
         
         // Find current commit (HEAD)
-        const headCommit = commits.find(c => 
-          c.refs.some(r => r.includes('HEAD'))
+        const head = await window.API.git.run(`rev-parse HEAD`)
+        const headCommit = commits.find(c =>
+          c.hash = head.trim()
         )
+        
         if (headCommit) setCurrentCommit(headCommit.hash)
         
         console.log('DAG layout created:', nodes)
@@ -46,8 +48,7 @@ export function DAGGraph() {
     try {
       await window.API.git.run(`checkout ${branchName}`)
       console.log(`Checked out to ${branchName}`)
-      // Refetch git data to update the DAG
-      await refetchGit()
+      
       // Rebuild DAG
       const commits = await fetchCommitsForDAG()
       const branches = extractBranches(commits)
@@ -59,6 +60,9 @@ export function DAGGraph() {
         c.refs.some(r => r.includes('HEAD'))
       )
       if (headCommit) setCurrentCommit(headCommit.hash)
+      
+      // Refetch git data to update character state
+      await refetchGit()
     } catch (err) {
       console.error(`Error checking out ${branchName}:`, err)
       alert(`Failed to checkout ${branchName}: ${err}`)
