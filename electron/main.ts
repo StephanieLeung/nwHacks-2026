@@ -114,7 +114,7 @@ ipcMain.handle('git:run', async (_event, command: string): Promise<string> => {
         console.log(`Git command output: ${stdout}`)
       }
 
-      resolve(gitCommand)
+      resolve(stdout);
     })
   })
 })
