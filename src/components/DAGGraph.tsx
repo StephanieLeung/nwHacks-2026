@@ -50,6 +50,7 @@ export function DAGGraph() {
 
   const handleCheckoutBranch = async (branchName: string) => {
     setCheckingOutBranch(branchName)
+    branchName = branchName.replace('origin/', '')
     try {
       const checkoutCmd = `git checkout ${branchName}`
       setCommand(checkoutCmd);
