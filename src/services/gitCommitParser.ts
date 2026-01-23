@@ -2,7 +2,6 @@ import { Commit } from './dagLayout'
 
 export async function fetchCommitsForDAG(): Promise<Commit[]> {
   try {
-    // Use dedicated handler that runs git without a shell
     const output = await window.ipcRenderer.invoke('git:getHistory')
     return parseCommits(String(output))
   } catch (err) {

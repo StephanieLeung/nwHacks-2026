@@ -9,15 +9,15 @@ import { useState, useEffect } from 'react'
 import { Input } from './ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion'
 import { useTerminal } from '../context/TerminalContext'
+import { useGit } from '../context/GitContext'  
 
 export interface LittleManProps {
   x?: number
   y?: number
-  characterState?: 'idle' | 'working' | 'dirty'
-  onActionSelect?: (action: string) => void
+  // characterState?: 'idle' | 'working' | 'dirty'
 }
 
-export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: LittleManProps) {
+export function LittleMan({ x, y }: LittleManProps) {
   const gitActionMap = [
     { name: 'Commit', image: littleman },
     { name: 'Push', image: littleman },
@@ -29,122 +29,24 @@ export function LittleMan({ x, y, characterState = 'idle', onActionSelect }: Lit
   const stateImageMap = {
     idle: littleman,
     working: pull,
-    dirty: luggage,
+    dirty: hold_box,
+    stashed: luggage,
   };
 
-  const [litleMan, setLittleMan] = useState<any>(stateImageMap[characterState]);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [commitMessage, setCommitMessage] = useState('');
-  const [showCommitInput, setShowCommitInput] = useState(false);
+  // const [showCommitInput, setShowCommitInput] = useState(false);
   const { setCommand } = useTerminal();
-
-  const handleGitAction = (action: string) => {
-    switch (action) {
-      case 'Commit':
-        setShowCommitInput(true);
-        break;
-      case 'Push': {
-        const cmd = `git push origin HEAD`;
-        setCommand(cmd);
-        window.API.git.run('push origin HEAD')
-          .then(response => {
-            console.log('Push successful:', response);
-            return response;
-          })
-          .catch(error => console.error('Push failed:', error));
-        break;
-      }
-      case 'Pull': {
-        const cmd = `git pull`;
-        setCommand(cmd);
-        window.API.git.run('pull')
-          .then(response => {
-            console.log('Pull successful:', response)
-            return response;
-          })
-          .catch(error => console.error('Pull failed:', error));
-        break;
-      }
-      case 'Stash': {
-        const cmd = `git stash`;
-        setCommand(cmd);
-        window.API.git.run('stash')
-          .then(response => {
-            console.log('Stash successful:', response)
-            return response;
-          })
-          .catch(error => console.error('Stash failed:', error));
-        break;
-      }
-      case 'Unstash': {
-        const cmd = `git stash pop`;
-        setCommand(cmd);
-        window.API.git.run('stash pop')
-          .then(response => {
-            console.log('Unstash successful:', response)
-            return response;
-          })
-          .catch(error => console.error('Unstash failed:', error));
-        break;
-      }
-      default:
-        console.error('Unknown action:', action);
-    }
-  };
-const handleCommit = () => {
-    console.log('Commit button clicked'); // Debugging log
-    if (commitMessage.trim()) {
-      console.log('Commit message:', commitMessage); // Debugging log
-      const statusCmd = `git status --porcelain`;
-      setCommand(statusCmd);
-      window.API.git.run('status --porcelain')
-        .then(statusOutput => {
-          if (!statusOutput.trim()) {
-            console.error('No changes to commit');
-            return;
-          }
-
-          const commitCmd = `git commit -m "${commitMessage}"`;
-          setCommand(commitCmd);
-          window.API.git.run(`commit -m "${commitMessage}"`)
-            .then(response => {
-              console.log('Commit successful:', response);
-              setShowCommitInput(false);
-              setCommitMessage('');
-            })
-            .catch(error => console.error('Commit failed:', error));
-        })
-        .catch(error => console.error('Failed to check status:', error));
-    } else {
-      console.error('Commit message cannot be empty');
-    }
-  };
-
-  const closeCommitInput = () => {
-    setShowCommitInput(false);
-    setCommitMessage('');
-  };
+  const { handleGitAction, characterState, animationState, showCommitInput } = useGit();
+  const [litleMan, setLittleMan] = useState<any>(stateImageMap[characterState]);
 
   useEffect(() => {
-    // Poll the git:hasChanges endpoint every 5 seconds
-    const intervalId = setInterval(() => {
-      window.API.git.hasChanges()
-        .then(response => {
-          if (response.hasChanges) {
-            setLittleMan(hold_box);
-          } else {
-            // Revert to the default state based on characterState
-            setLittleMan(stateImageMap[characterState]);
-          }
-        })
-        .catch(error => {
-          console.error('Error calling git:hasChanges:', error);
-        });
-    }, 5000); // 5 seconds
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [characterState]);
+    if (animationState !== 'none') {
+      setLittleMan(pull);
+    } else {
+      setLittleMan(stateImageMap[characterState]);
+    }
+  }, [characterState, animationState])
 
   // If positioned (x, y provided), render as inline element positioned absolutely
   if (x !== undefined && y !== undefined) {
@@ -191,7 +93,10 @@ const handleCommit = () => {
                                     />
                                     <div className="flex space-x-2">
                                         <button
-                                        onClick={handleCommit}
+                                        onClick={() => {
+                                          handleGitAction(action.name, commitMessage);
+                                          setCommitMessage('');
+                                        }}
                                         className="px-3 py-1.5 text-xs font-semibold text-sm text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 border-2 border-purple-200 rounded-full shadow-sm"
                                         >
                                         Commit

@@ -174,7 +174,7 @@ ipcMain.handle('git:run', async (_event, command: string): Promise<string> => {
   ipcMain.handle('git:hasChanges', async () => {
     return new Promise((resolve, reject) => {
       if (!repoPath) return reject('repoPath not set')
-      
+
       exec(
         'git status --porcelain',
         { cwd: repoPath },
@@ -186,7 +186,7 @@ ipcMain.handle('git:run', async (_event, command: string): Promise<string> => {
           // If stdout is empty, there are no changes
           // If stdout has content, there are uncommitted/unstaged changes
           const hasChanges = stdout.trim().length > 0
-          console.log('git status check:', hasChanges, stdout.trim())
+          // console.log('git status check:', hasChanges, stdout.trim())
           resolve(hasChanges)
         }
       )

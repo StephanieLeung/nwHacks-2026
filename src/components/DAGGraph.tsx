@@ -11,7 +11,7 @@ export function DAGGraph() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null)
   const [currentCommit, setCurrentCommit] = useState<string | null>(null)
   const [checkingOutBranch, setCheckingOutBranch] = useState<string | null>(null)
-  const { status, refetchGit, characterState, animationState, triggerAnimation } = useGit()
+  const { status, refetchGit, animationState, triggerAnimation } = useGit()
   const hoverTimeoutRef = useState<NodeJS.Timeout | null>(null)[0]
 
   const { setCommand } = useTerminal();
@@ -128,10 +128,7 @@ export function DAGGraph() {
       {/* LittleMan positioned above current HEAD */}
       {currentCommit && layoutNodes.length > 0 && !loading && (
         <div style={{ position: 'absolute', left: `${littleManX}px`, top: `${littleManY}px`, zIndex: 50 }}>
-          <LittleMan characterState={characterState as any} animationState={animationState} onActionSelect={(action) => {
-            if (action === 'Pull') triggerAnimation('pulling')
-            if (action === 'Push') triggerAnimation('pushing')
-          }} />
+          <LittleMan />
         </div>
       )}       <svg
         width={width}
